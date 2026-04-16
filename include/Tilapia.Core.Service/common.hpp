@@ -5,18 +5,24 @@ Created by @PieroCastillo on 2026-04-16
 #define TILAPIA_CORE_SERVICE_API_HPP
 
 #ifdef _INTELLISENSE
+    #include <any>
     #include <array>
     #include <algorithm>
     #include <atomic>
     #include <concepts>
+    #include <cstdint>
     #include <condition_variable>
     #include <expected>
     #include <filesystem>
+    #include <functional>
+    #include <limits>
     #include <map>
     #include <memory>
+    #include <memory_resource>
     #include <mutex>
     #include <optional>
     #include <print>
+    #include <queue>
     #include <span>
     #include <stdexcept>
     #include <string>
@@ -28,15 +34,13 @@ Created by @PieroCastillo on 2026-04-16
     #include <utility>
     #include <variant>
     #include <vector>
-#else 
-    import std;
 #endif
 
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-bool net_init() { 
+bool net_init() {
     WSADATA wsa; return WSAStartup(MAKEWORD(2, 2), &wsa) == 0;
 }
 void net_cleanup() {
@@ -67,5 +71,5 @@ void net_close_socket(int s) {
 
 // copy & paste this code every file that includes this header
 #ifndef _INTELLISENSE
-    import std;
+import std;
 #endif

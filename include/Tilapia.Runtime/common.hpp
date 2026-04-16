@@ -5,18 +5,24 @@ Created by @PieroCastillo on 2026-04-16
 #define TILAPIA_RUNTIME_API_HPP
 
 #ifdef _INTELLISENSE
+    #include <any>
     #include <array>
     #include <algorithm>
     #include <atomic>
     #include <concepts>
+    #include <cstdint>
     #include <condition_variable>
     #include <expected>
     #include <filesystem>
+    #include <functional>
+    #include <limits>
     #include <map>
     #include <memory>
+    #include <memory_resource>
     #include <mutex>
     #include <optional>
     #include <print>
+    #include <queue>
     #include <span>
     #include <stdexcept>
     #include <string>
