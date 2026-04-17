@@ -15,6 +15,7 @@ Created by @PieroCastillo on 2026-04-16
     #include <expected>
     #include <filesystem>
     #include <functional>
+    #include <iostream>
     #include <limits>
     #include <map>
     #include <memory>
