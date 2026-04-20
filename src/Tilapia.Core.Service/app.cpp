@@ -1,5 +1,7 @@
-#include "common.hpp"
 #include <cstdint>
+
+#include "common.hpp"
+#include "UdpServer.hpp"
 
 /*
 base:
@@ -15,46 +17,20 @@ SSE
 gRPC
 */
 
+std::unique_ptr<Tilapia::Service::UdpServer> server;
+
 int main(int argc, char** argv)
 {
     // NOW, WINDOWS ONLY (next step, imlp udp for win/linux)
     std::println("Tilapia Core Service v0.1");
-    netInit();
-
-    uint16_t port = 8888;
-    uint32_t size = 1024;
-
-    sockaddr_in server = {
-        .sin_family = AF_INET,
-        .sin_port = htons(port),
-    };
-    server.sin_addr.s_addr = INADDR_ANY;
-    auto s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    bind(s, (struct sockaddr*)&server, sizeof(server));
-
-    auto recvPackets = std::jthread([&](std::stop_token stopToken) {
-        sockaddr_in client;
-        int client_len = sizeof(client);
-        std::vector<uint8_t> buf(size);
-        std::println("Waiting for datagrams...");
-
-        while (!stopToken.stop_requested())
-        {
-            auto recv_len = recvfrom(s, (char*)buf.data(), size, 0, (struct sockaddr*)&client, &client_len);
-
-            if (recv_len != SOCKET_ERROR) {
-                std::println("Received: {}", std::string_view((char*)buf.data(), recv_len));
-            }
-        }
-        std::println("worker finished");
-        });
-
-    while (true)
+    
+    Tilapia::Service::UdpServerDesc servDesc =
     {
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-    }
+        .port = 8888,
+        .packetSize = 1024,
+        .packetCount = 64,
+    };
+    server = std::make_unique<Tilapia::Service::UdpServer>(servDesc);
 
-    netCloseSocket(s);
-    netCleanup();
     return 0;
 }
