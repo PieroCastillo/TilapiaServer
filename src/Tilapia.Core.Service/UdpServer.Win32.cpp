@@ -40,7 +40,12 @@ UdpServer::UdpServer(const UdpServerDesc& desc) :
     WSADATA wsa;
     WSAStartup(MAKEWORD(2, 2), &wsa);
 
-    serverContext->s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    serverContext->s = WSASocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP, NULL, 0, WSA_FLAG_REGISTERED_IO); // socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    
+    int optval = 1;
+    if(setsockopt(serverContext->s, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval, sizeof(optval)) == SOCKET_ERROR)
+        std::println("RIO: Can't share port {}", port);
+
     GUID functionTableId = WSAID_MULTIPLE_RIO;
     DWORD dwBytes = 0;
     if (WSAIoctl(serverContext->s, SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER,
@@ -113,8 +118,12 @@ UdpServer::~UdpServer()
     delete serverContext;
 }
 
-auto UdpServer::MainLoop()
+void UdpServer::Run()
 {
+    uint64_t packetsPerSecond = 0;
+    uint64_t bytesPerSecond = 0;
+    auto lastPrint = std::chrono::steady_clock::now();
+
     while (true) {
         ULONG numResults = serverContext->rio.RIODequeueCompletion(serverContext->cq, serverContext->results.data(), packetCount);
 
@@ -125,20 +134,36 @@ auto UdpServer::MainLoop()
             continue;
         }
 
+        packetsPerSecond += numResults;
         for (ULONG i = 0; i < numResults; ++i) {
             auto* compCtx = reinterpret_cast<NetContext*>(serverContext->results[i].RequestContext);
 
-            std::string_view payload(
-                serverContext->rawBuffer + compCtx->rioBuf.Offset,
-                serverContext->results[i].BytesTransferred
-            );
+            auto connectionID = compCtx->connectionId;
+            auto payloadAddr = serverContext->rawBuffer + compCtx->rioBuf.Offset;
+            auto payloadSize = serverContext->results[i].BytesTransferred;
 
-            std::println("[Procesing] Context ID: {} | Bytes: {} | Data: {}",
-                compCtx->connectionId,
-                serverContext->results[i].BytesTransferred,
-                payload);
+            bytesPerSecond += payloadSize;
+
+            // std::string_view payload(
+            //     serverContext->rawBuffer + compCtx->rioBuf.Offset,
+            //     serverContext->results[i].BytesTransferred
+            // );
+
+            // std::println("[Procesing] Context ID: {} | Bytes: {} | Data: {}",
+            //     compCtx->connectionId,
+            //     serverContext->results[i].BytesTransferred,
+            //     payload);
 
             serverContext->rio.RIOReceive(serverContext->rq, &(compCtx->rioBuf), 1, 0, reinterpret_cast<PVOID>(compCtx));
+        }
+
+        auto now = std::chrono::steady_clock::now();
+        if (now - lastPrint >= std::chrono::seconds(1))
+        {
+            std::println("[STATS] packets/s: {} bytes/s: {}", packetsPerSecond, bytesPerSecond);
+            packetsPerSecond = 0;
+            bytesPerSecond = 0;
+            lastPrint = now;
         }
     }
 }

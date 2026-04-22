@@ -31,6 +31,7 @@ int main(int argc, char** argv)
         .packetCount = 64,
     };
     server = std::make_unique<Tilapia::Service::UdpServer>(servDesc);
+    server->Run();
 
     return 0;
 }
