@@ -41,5 +41,5 @@ Created by @PieroCastillo on 2026-04-16
 
 // copy & paste this code every file that includes this header
 #ifndef _INTELLISENSE
-    import std;
+import std;
 #endif

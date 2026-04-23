@@ -1,8 +1,8 @@
 /*
 Created by @PieroCastillo on 2026-04-16
 */
-#ifndef TILAPIA_CORE_SERVICE_API_HPP
-#define TILAPIA_CORE_SERVICE_API_HPP
+#ifndef TILAPIA_DAEMON_API_HPP
+#define TILAPIA_DAEMON_API_HPP
 
 #ifdef _INTELLISENSE
 #include <any>
@@ -87,7 +87,7 @@ Created by @PieroCastillo on 2026-04-16
 // }
 // #endif
 
-#endif // TILAPIA_CORE_SERVICE_API_HPP
+#endif // TILAPIA_DAEMON_API_HPP
 
 // copy & paste this code every file that includes this header
 #ifndef _INTELLISENSE

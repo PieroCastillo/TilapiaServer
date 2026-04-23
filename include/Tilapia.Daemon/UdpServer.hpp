@@ -1,8 +1,8 @@
 /*
 Created by @PieroCastillo on 2026-04-19
 */
-#ifndef TILAPIA_CORE_SERVICE_UDP_SERVER_HPP
-#define TILAPIA_CORE_SERVICE_UDP_SERVER_HPP
+#ifndef TILAPIA_DAEMON_UDP_SERVER_HPP
+#define TILAPIA_DAEMON_UDP_SERVER_HPP
 
 #ifdef _INTELLISENSE
 #include <cstdint>
@@ -10,7 +10,7 @@ Created by @PieroCastillo on 2026-04-19
 #include <span>
 #endif
 
-namespace Tilapia::Service
+namespace Tilapia::Daemon
 {
     struct Endpoint
     {
@@ -71,4 +71,4 @@ namespace Tilapia::Service
         void Run();
     };
 };
-#endif // TILAPIA_CORE_SERVICE_UDP_SERVER_HPP
+#endif // TILAPIA_DAEMON_UDP_SERVER_HPP

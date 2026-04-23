@@ -1,4 +1,10 @@
+#include <stdlib.h>
+
 #include "common.hpp"
+#include "ir.hpp"
+
+using namespace TilapiaServer::Runtime;
+using namespace TilapiaServer::Runtime::IR;
 
 std::string fakeAsm = 
 R"(executionModel plugin
@@ -21,15 +27,24 @@ int main(int argc, char **argv) {
         std::println("Invalid Input");
     }
 
+
     /*
     execBinary = load(asmPath); // converts raw data to spec-valid IR Assembly
     validate(execBinary); // check caps
-    scheduler.add(executionUnit(execBinary)); // starts caps
     while()
+    */
+
+    std::vector<instruction> opts;
+    bool shouldStop = false;
+    auto stackSize = 4 * 1024; // 4KB
+    const auto stackPtr = malloc(stackSize);
+    auto stackOffset = 0;
+
+    while(!shouldStop)
     {
     
     }
-    */
+    free(stackPtr);
 
     return 0;
 }

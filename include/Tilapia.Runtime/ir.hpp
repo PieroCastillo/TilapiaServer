@@ -4,7 +4,7 @@ Created by @PieroCastillo on 2026-04-16
 #ifndef TILAPIA_RUNTIME_IR_HPP
 #define TILAPIA_RUNTIME_IR_HPP
 
-import std;
+#include <cstdint>
 
 namespace TilapiaServer::Runtime::IR
 {

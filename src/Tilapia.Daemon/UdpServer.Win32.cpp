@@ -8,15 +8,15 @@
 #include <ws2tcpip.h>
 #include <mswsock.h>
 
-using namespace Tilapia::Service;
+using namespace Tilapia::Daemon;
 
-struct Tilapia::Service::NetContext
+struct Tilapia::Daemon::NetContext
 {
     RIO_BUF rioBuf;
     int connectionId;
 };
 
-struct Tilapia::Service::UdpServerContext
+struct Tilapia::Daemon::UdpServerContext
 {
     RIO_EXTENSION_FUNCTION_TABLE rio;
     std::vector<RIORESULT> results;
