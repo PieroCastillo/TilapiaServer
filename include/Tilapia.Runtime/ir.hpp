@@ -5,208 +5,322 @@ Created by @PieroCastillo on 2026-04-16
 #define TILAPIA_RUNTIME_IR_HPP
 
 #include <cstdint>
+#include <string>
+#include <vector>
 
 namespace TilapiaServer::Runtime::IR
 {
-    using opcode_t = uint32_t;
     /*
     FORMAT : 0xDDSSOOOO
     DD = domain
     SS = subdomain
     OOOO = opcode index
     */
-    enum class coreOpcodes : opcode_t
+    enum class coreCaps : uint16_t
     {
-        // ALU : 01
-        add = 0x00010001,
-        sub = 0x00010002,
-        mul = 0x00010003,
-        div = 0x00010004,
-        mod = 0x00010005,
-        neg = 0x00010006,
-
-        and_ = 0x00010007,
-        or_ = 0x00010008,
-        xor_ = 0x00010009,
-        not_ = 0x0001000A,
-
-        shl = 0x0001000B,
-        shr = 0x0001000C,
-
-        cmp_eq = 0x0001000D,
-        cmp_ne = 0x0001000E,
-        cmp_lt = 0x0001000F,
-        cmp_le = 0x00010010,
-        cmp_gt = 0x00010011,
-        cmp_ge = 0x00010012,
-
-        // TIME: 02
-        now_monotonic = 0x00020001,
-        now_wallclock = 0x00020002,
-
-        sleep_ns = 0x00020003,
-        sleep_until = 0x00020004,
-
-        timer_create = 0x00020005,
-        timer_cancel = 0x00020006,
-
-        // RANDOM : 03
-        seed = 0x00030001,
-        next_u32 = 0x00030002,
-        next_u64 = 0x00030003,
-        next_f32 = 0x00030004,
-        next_f64 = 0x00030005,
-        fill_bytes = 0x00030006,
-        secure_fill_bytes = 0x00030007,
-
-        // PRINT / DEBUG : 04
-        print = 0x00040001,
-        print_i32 = 0x00040002,
-        print_i64 = 0x00040003,
-        print_f32 = 0x00040004,
-        print_f64 = 0x00040005,
-        print_str = 0x00040006,
-        flush = 0x00040007,
-
-        // MEMORY : 05
-        load = 0x00050001,
-        store = 0x00050002,
-
-        load8 = 0x00050003,
-        load16 = 0x00050004,
-        load32 = 0x00050005,
-        load64 = 0x00050006,
-
-        store8 = 0x00050007,
-        store16 = 0x00050008,
-        store32 = 0x00050009,
-        store64 = 0x0005000A,
-
-        memcpy = 0x0005000B,
-        memmove = 0x0005000C,
-        memset = 0x0005000D,
-
-        alloc = 0x0005000E,
-        free = 0x0005000F,
-
-        protect = 0x00050010,
-
-        // ATOMIC : 06
-        atomic_load = 0x00060001,
-        atomic_store = 0x00060002,
-
-        exchange = 0x00060003,
-        compare_exchange = 0x00060004,
-
-        fetch_add = 0x00060005,
-        fetch_sub = 0x00060006,
-
-        fetch_and = 0x00060007,
-        fetch_or = 0x00060008,
-        fetch_xor = 0x00060009,
-
-        fence = 0x0006000A,
-
-        // SYNC : 07
-        spawn = 0x00070001,
-        join = 0x00070002,
-        yield = 0x00070003,
-
-        park = 0x00070004,
-        unpark = 0x00070005,
-
-        mutex_lock = 0x00070006,
-        mutex_unlock = 0x00070007,
-
-        semaphore_wait = 0x00070008,
-        semaphore_post = 0x00070009,
-
-        event_wait = 0x0007000A,
-        event_signal = 0x0007000B,
-
-        // SIMD : 08
-        vadd = 0x00080001,
-        vsub = 0x00080002,
-        vmul = 0x00080003,
-        vdiv = 0x00080004,
-
-        vand = 0x00080005,
-        vor = 0x00080006,
-        vxor = 0x00080007,
-
-        vload = 0x00080008,
-        vstore = 0x00080009,
-
-        vshuffle = 0x0008000A,
-        vreduce_add = 0x0008000B,
-
-        // TLS 1.3 :  10
-        tls_context_create = 0x00100001,
-        tls_handshake_start = 0x00100002,
-        tls_encrypt = 0x00100003,
-        tls_decrypt = 0x00100004,
-        tls_export_key_material = 0x00100005,
-        tls_close = 0x00100006,
-
-        // QUIC : 11
-        quic_endpoint_create = 0x00110001,
-        quic_connect = 0x00110002,
-        quic_accept = 0x00110003,
-
-        quic_stream_open = 0x00110004,
-        quic_stream_accept = 0x00110005,
-
-        quic_stream_send = 0x00110006,
-        quic_stream_recv = 0x00110007,
-
-        quic_datagram_send = 0x00110008,
-        quic_datagram_recv = 0x00110009,
-
-        quic_close_stream = 0x0011000A,
-        quic_close_connection = 0x0011000B,
-
-        // HTTP/3 : 12
-        http3_session_create = 0x00120001,
-        http3_request_send = 0x00120002,
-        http3_response_recv = 0x00120003,
-
-        http3_headers_send = 0x00120004,
-        http3_headers_recv = 0x00120005,
-
-        http3_body_send = 0x00120006,
-        http3_body_recv = 0x00120007,
-
-        http3_session_close = 0x00120008,
-
-        // WEBTRANSPORT : 13
-        wt_session_create = 0x00130001,
-
-        wt_connect = 0x00130002,
-        wt_accept = 0x00130003,
-
-        wt_stream_open = 0x00130004,
-        wt_stream_accept = 0x00130005,
-
-        wt_datagram_send = 0x00130006,
-        wt_datagram_recv = 0x00130007,
-
-        wt_close = 0x00130008,
+        control      = 0x0000,
+        alu          = 0x0001,
+        time         = 0x0002,
+        random       = 0x0003,
+        print        = 0x0004,
+        memory       = 0x0005,
+        atomic       = 0x0006,
+        sync         = 0x0007,
+        simd         = 0x0008,
+        tls13        = 0x0010,
+        quic         = 0x0011,
+        http3        = 0x0012,
+        webtransport = 0x0013,
     };
 
-    struct instruction
+    enum class coreDatatype : uint16_t
+    {
+        u8        = 0x0001,
+        u16       = 0x0002,
+        u32       = 0x0004,
+        u64       = 0x0008,
+        u128      = 0x0010,
+        i8        = 0x0011,
+        i16       = 0x0012,
+        i32       = 0x0014,
+        i64       = 0x0018,
+        f32       = 0x0024,
+        f64       = 0x0028,
+        boolean   = 0x0031,
+
+        memhandle = 0x0100,
+        reshandle = 0x0200,
+        string    = 0x0300,
+        span      = 0x0400,
+    };
+
+    enum class coreBaseOpcodes : uint32_t
+    {   
+        // CONTROL : 0x00
+        nop          = 0x00000000,
+        push_var     = 0x00000010,
+        push_imm_i32 = 0x00000011,
+        push_const   = 0x00000012,
+        pop_var      = 0x00000015,
+        call_local   = 0x00000020,
+        call_cap     = 0x00000021,
+        call_ext     = 0x00000022,
+
+        // ALU INT : 0x0100
+        add_i        = 0x01000001,
+        sub_i        = 0x01000002,
+        mul_i        = 0x01000003,
+        div_i        = 0x01000004,
+        mod_i        = 0x01000005,
+
+        // ALU FLOAT : 0x0101
+        add_f        = 0x01010001,
+        sub_f        = 0x01010002,
+        mul_f        = 0x01010003,
+        div_f        = 0x01010004,
+
+        // ALU BITWISE/LOGIC : 0x0102
+        and_b        = 0x01020001,
+        or_b         = 0x01020002,
+        xor_b        = 0x01020003,
+        not_b        = 0x01020004,
+        shl_b        = 0x01020005,
+        shr_b        = 0x01020006,
+
+        // ALU COMP INT : 0x0103
+        cmp_eq_i     = 0x01030001,
+        cmp_ne_i     = 0x01030002,
+        cmp_lt_i     = 0x01030003,
+        cmp_gt_i     = 0x01030004,
+
+        // ALU COMP FLOAT : 0x0104
+        cmp_eq_f     = 0x01040001,
+        cmp_lt_f     = 0x01040002,
+        cmp_gt_f     = 0x01040003,
+
+        // MEMORY : 0x05
+        load_u8      = 0x05000001,
+        load_i32     = 0x05000002,
+        load_i64     = 0x05000003,
+        load_f64     = 0x05000004,
+
+        store_u8     = 0x05010001,
+        store_i32    = 0x05010002,
+        store_i64    = 0x05010003,
+        store_f64    = 0x05010004,
+
+        memcpy       = 0x05020001,
+        memmove      = 0x05020002,
+        memset       = 0x05020003,
+
+        alloc        = 0x05030001,
+        free         = 0x05030002,
+        protect      = 0x05030003,
+    };
+
+    enum class coreExtCalls : uint32_t
+    {
+        // TIME : 0x02
+        now_monotonic = 0x02000001,
+        now_wallclock = 0x02000002,    
+        
+        // SIMD INT : 0x0800
+        vadd_i        = 0x08000001,
+        vsub_i        = 0x08000002,
+        vmul_i        = 0x08000003,
+        vdiv_i        = 0x08000004,
+
+        // SIMD FLOAT : 0x0801
+        vadd_f        = 0x08010001,
+        vsub_f        = 0x08010002,
+        vmul_f        = 0x08010003,
+        vdiv_f        = 0x08010004,
+
+        // SIMD BITWISE : 0x0802
+        vand_b        = 0x08020001,
+        vor_b         = 0x08020002,
+        vxor_b        = 0x08020003,
+
+        // SIMD MEMORY/UTILS : 0x0803
+        vload         = 0x08030001,
+        vstore        = 0x08030002,
+        vshuffle      = 0x08030003,
+        vreduce_add_i = 0x08030004,
+        vreduce_add_f = 0x08030005,
+    };
+
+    enum class coreCalls : uint32_t
+    {
+        // RANDOM : 0x03
+        seed              = 0x03000001,
+        next_u32          = 0x03000002,
+        next_u64          = 0x03000003,
+        next_f32          = 0x03000004,
+        next_f64          = 0x03000005,
+        fill_bytes        = 0x03000006,
+        secure_fill_bytes = 0x03000007,
+
+        // PRINT / DEBUG : 0x04
+        print_str         = 0x04000001,
+        print_i32         = 0x04000002,
+        print_i64         = 0x04000003,
+        print_f32         = 0x04000004,
+        print_f64         = 0x04000005,
+        flush             = 0x04000006,
+
+        // TLS 1.3 : 0x10
+        tls_context_create      = 0x10000001,
+        tls_handshake_start     = 0x10000002,
+        tls_encrypt             = 0x10000003,
+        tls_decrypt             = 0x10000004,
+        tls_export_key_material = 0x10000005,
+        tls_close               = 0x10000006,
+
+        // QUIC : 0x11
+        quic_endpoint_create    = 0x11000001,
+        quic_connect            = 0x11000002,
+        quic_accept             = 0x11000003,
+        quic_stream_open        = 0x11000004,
+        quic_stream_accept      = 0x11000005,
+        quic_stream_send        = 0x11000006,
+        quic_stream_recv        = 0x11000007,
+        quic_datagram_send      = 0x11000008,
+        quic_datagram_recv      = 0x11000009,
+        quic_close_stream       = 0x1100000A,
+        quic_close_connection   = 0x1100000B,
+
+        // HTTP/3 : 0x12
+        http3_session_create    = 0x12000001,
+        http3_request_send      = 0x12000002,
+        http3_response_recv     = 0x12000003,
+        http3_headers_send      = 0x12000004,
+        http3_headers_recv      = 0x12000005,
+        http3_body_send         = 0x12000006,
+        http3_body_recv         = 0x12000007,
+        http3_session_close     = 0x12000008,
+
+        // WEBTRANSPORT : 0x13
+        wt_session_create       = 0x13000001,
+        wt_connect              = 0x13000002,
+        wt_accept               = 0x13000003,
+        wt_stream_open          = 0x13000004,
+        wt_stream_accept        = 0x13000005,
+        wt_datagram_send        = 0x13000006,
+        wt_datagram_recv        = 0x13000007,
+        wt_close                = 0x13000008,
+    };
+
+    enum class symbolType : uint16_t
+    {
+        function,
+        global,
+        external,
+        capability,
+        data,
+    };
+
+    enum class entrypointType : uint16_t
+    {
+        executable,
+        library,
+        plugin,
+    };
+
+    enum class resourceFlags : uint32_t
+    {
+        none = 0,
+        readable = 1 << 0,
+        writable = 1 << 1,
+        executable = 1 << 2,
+        network = 1 << 3,
+        filesystem = 1 << 4,
+        gpu = 1 << 5,
+    };
+
+    struct header
+    {
+        uint32_t magic = 0x74694952; // "tiIR"
+        uint16_t versionMajor = 1;
+        uint16_t versionMinor = 0;
+        uint32_t flags;
+        uint32_t entrypointOffset;
+        std::string executableName;
+    };
+
+    struct capabilityEntry
+    {
+        uint16_t capId;
+        uint16_t versionMajor;
+        uint16_t versionMinor;
+        uint32_t flags;
+    };
+
+    struct type
+    {
+        uint32_t offset;
+        uint32_t subtypeCount;
+    };
+
+    struct dynamicLibRef
+    {
+        uint64_t version;
+        uint32_t symbolOffset;
+        uint32_t flags;
+    };
+
+    struct dataEntry
+    {
+        uint32_t size;
+        uint8_t dataOffset;
+        uint32_t alignment;
+    };
+
+    struct symbolEntry
+    {
+        symbolType type;
+        uint32_t offset;
+        uint32_t size;
+        uint32_t flags;
+    };
+
+    struct entrypoint
+    {
+        entrypointType type;
+        uint32_t instructionOffset;
+        uint32_t flags;
+    };
+
+    struct functionEntry
+    {
+        uint32_t startInstructionOffset;
+        uint32_t instructionCount;
+        uint16_t paramCount;
+        uint16_t flags;
+    };
+
+
+    struct alignas(16) instruction
     {
         uint16_t capId;
         uint16_t opCode;
         uint32_t op1, op2, op3;
     };
 
-    struct instructionExt
+    struct binary
     {
-        uint16_t capId;
-        uint16_t opCode;
-        uint32_t op1, op2, op3;
-        uint32_t ext1, ext2, ext3, ext4;
+        header header;
+        std::vector<capabilityEntry> capabilities;
+        std::vector<type> types;
+        std::vector<uint8_t> typesPool;
+        std::vector<symbolEntry> symbols;
+        // std::vector<dynamicLibRef> dynamicLibs;
+        std::vector<entrypoint> entrypoints;
+        std::vector<functionEntry> functions;
+        std::vector<dataEntry> readOnlyData;
+        std::vector<uint8_t> readOnlyDataPool;
+        std::vector<dataEntry> readWriteData;
+        std::vector<uint8_t> readWriteDataPool;
+        std::vector<instruction> instructions;
     };
 };
-
 #endif // TILAPIA_RUNTIME_IR_HPP
