@@ -21,7 +21,9 @@ namespace TilapiaServer::Runtime
     {
         std::vector<uint64_t> valueStack;
         std::vector<CallFrame> callStack;
-        std::vector<uint8_t> memoryArena;
+        std::vector<uint8_t> memoryArena; // ro | rw | bss | heap
+        uint32_t rwOffset, bssOffset, heapOffset;
+        uint32_t roSize, rwSize, bssSize, heapSize;
         uint32_t arenaOffset = 0;
 
         uint32_t ip = 0; // instruction ptr
@@ -32,12 +34,6 @@ namespace TilapiaServer::Runtime
         int32_t exitCode = 0;
     };
 
-    void ConfigureInstance(IR::binary* exe, Instance* instance, uint32_t arenaSize)
-    {
-        instance->ip = exe->header.entrypointOffset;
-        instance->valueStack.resize(8192); // 8192 variables
-        instance->callStack.reserve(1024); // depth limit
-        instance->memoryArena.resize(arenaSize);
-    }
+    void ConfigureInstance(IR::binary* exe, Instance* instance, uint32_t arenaSize);
 };
 #endif // TILAPIA_RUNTIME_INSTANCE_HPP

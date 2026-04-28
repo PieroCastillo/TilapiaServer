@@ -9,6 +9,7 @@ Created by @PieroCastillo on 2026-04-16
     #include <array>
     #include <algorithm>
     #include <atomic>
+    #include <bit>
     #include <concepts>
     #include <cstdint>
     #include <condition_variable>
