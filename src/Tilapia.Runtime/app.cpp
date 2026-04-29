@@ -25,9 +25,14 @@ w1 w2 w3 w4 // rw static memory
 v1 v2 v3 v4 // stack variables
 )";
 
+void handleNotImplementedYet()
+{
+
+}
+
 void handleOverflow()
 {
-    
+
 }
 
 void handleZeroDivision()
@@ -53,6 +58,10 @@ int main(int argc, char** argv) {
     /*
     execBinary = load(asmPath); // converts raw data to spec-valid IR Assembly
     validate(execBinary); // check caps
+    -- validate stack registers (really important, stack overflow if dont)
+    -- check capabilities
+    -- check function arguments
+    -- validate calls for dynamic libs & capabilities
     while()0x0400IR
     */
 
@@ -72,34 +81,25 @@ int main(int argc, char** argv) {
         {
         case IR::coreOpcodes::nop:
             break;
-        case IR::coreOpcodes::mov: // dst, src
+        case IR::coreOpcodes::mov: // dstRg, srcRg
             es.valueStack[es.bp + inst.op1] = es.valueStack[es.bp + inst.op2];
             break;
-        case IR::coreOpcodes::li32_s: // dst, low_imm
+        case IR::coreOpcodes::li_i32: // dstRg, low_imm
             es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(static_cast<int64_t>(static_cast<int32_t>(inst.op2)));
             break;
-        case IR::coreOpcodes::li32_u: // dst, low_imm
+        case IR::coreOpcodes::li_u32: // dstRg, low_imm
             es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(inst.op2);
             break;
-        case IR::coreOpcodes::li32_f: // dst, low_imm
+        case IR::coreOpcodes::li_f32: // dstRg, low_imm
         {
             float raw_f32 = std::bit_cast<float>(inst.op2);
             es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(static_cast<double>(raw_f32));
             break;
         }
-        case IR::coreOpcodes::li64: // dst, high_imm, low_imm
+        case IR::coreOpcodes::li64: // dstRg, high_imm, low_imm
             es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(inst.op2) << 32 | static_cast<uint64_t>(inst.op3);
             break;
-        case IR::coreOpcodes::drop_n: // n
-            es.sp -= inst.op1;
-            break;
-        case IR::coreOpcodes::call:
-        case IR::coreOpcodes::ret:
-        case IR::coreOpcodes::s_addr:
-        case IR::coreOpcodes::alloc:
-        case IR::coreOpcodes::free:
-            break;
-        case IR::coreOpcodes::load_u8: // dstRg, srcPtr, offsetRg
+        case IR::coreOpcodes::load_u8: // dstRg, srcPtrRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
             uint32_t memSize = fatPtr >> 32;
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = val;
             break;
         }
-        case IR::coreOpcodes::load_i16: // dstRg, srcPtr, offsetRg
+        case IR::coreOpcodes::load_i16: // dstRg, srcPtrRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
             uint32_t memSize = fatPtr >> 32;
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = val;
             break;
         }
-        case IR::coreOpcodes::load_i32: // dstRg, srcPtr, offsetRg
+        case IR::coreOpcodes::load_i32: // dstRg, srcPtrRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
             uint32_t memSize = fatPtr >> 32;
@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = val;
             break;
         }
-        case IR::coreOpcodes::load_i64: // dstRg, srcPtr, offsetRg
+        case IR::coreOpcodes::load_i64: // dstRg, srcPtrRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
             uint32_t memSize = fatPtr >> 32;
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = val;
             break;
         }
-        case IR::coreOpcodes::load_f32: // dstRg, srcPtr, offsetRg
+        case IR::coreOpcodes::load_f32: // dstRg, srcPtrRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
             uint32_t memSize = fatPtr >> 32;
@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(static_cast<double>(val));
             break;
         }
-        case IR::coreOpcodes::load_f64: // dstRg, srcPtr, offsetRg
+        case IR::coreOpcodes::load_f64: // dstRg, srcPtrRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
             uint32_t memSize = fatPtr >> 32;
@@ -207,7 +207,7 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(val);
             break;
         }
-        case IR::coreOpcodes::store_u8: // dstPtr, srcRg, offsetRg
+        case IR::coreOpcodes::store_u8: // dstPtrRg, srcRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
             uint32_t memSize = fatPtr >> 32;
@@ -224,7 +224,7 @@ int main(int argc, char** argv) {
             std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(uint8_t));
             break;
         }
-        case IR::coreOpcodes::store_i16: // dstPtr, srcRg, offsetRg
+        case IR::coreOpcodes::store_i16: // dstPtrRg, srcRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
             uint32_t memSize = fatPtr >> 32;
@@ -241,7 +241,7 @@ int main(int argc, char** argv) {
             std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(uint16_t));
             break;
         }
-        case IR::coreOpcodes::store_i32: // dstPtr, srcRg, offsetRg
+        case IR::coreOpcodes::store_i32: // dstPtrRg, srcRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
             uint32_t memSize = fatPtr >> 32;
@@ -258,7 +258,7 @@ int main(int argc, char** argv) {
             std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(uint32_t));
             break;
         }
-        case IR::coreOpcodes::store_i64: // dstPtr, srcRg, offsetRg
+        case IR::coreOpcodes::store_i64: // dstPtrRg, srcRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
             uint32_t memSize = fatPtr >> 32;
@@ -275,7 +275,7 @@ int main(int argc, char** argv) {
             std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(uint64_t));
             break;
         }
-        case IR::coreOpcodes::store_f32: // dstPtr, srcRg, offsetRg
+        case IR::coreOpcodes::store_f32: // dstPtrRg, srcRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
             uint32_t memSize = fatPtr >> 32;
@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
             std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(float));
             break;
         }
-        case IR::coreOpcodes::store_f64: // dstPtr, srcRg, offsetRg
+        case IR::coreOpcodes::store_f64: // dstPtrRg, srcRg, offsetRg
         {
             uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
             uint32_t memSize = fatPtr >> 32;
@@ -311,31 +311,45 @@ int main(int argc, char** argv) {
             std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(double));
             break;
         }
+        case IR::coreOpcodes::s_addr:
+        case IR::coreOpcodes::alloc:
+        case IR::coreOpcodes::free:
+            break;
         case IR::coreOpcodes::memcpy:
         case IR::coreOpcodes::submem:
             break;
-        case IR::coreOpcodes::add_i:
+        case IR::coreOpcodes::call: // funcID | firstRg | -  
+            break;
+        case IR::coreOpcodes::call_cap: // capID | funcID | firstRg 
+            break;
+        case IR::coreOpcodes::call_lib: // libID | funcID | firstRg  
+            break;
+        case IR::coreOpcodes::ret:
+            break;
+
+            // int ALU
+        case IR::coreOpcodes::add_i: // dstRg | src1Rg | src2Rg
         {
             auto val1 = es.valueStack[es.bp + inst.op2];
             auto val2 = es.valueStack[es.bp + inst.op3];
             es.valueStack[es.bp + inst.op1] = val1 + val2;
             break;
         }
-        case IR::coreOpcodes::sub_i:
+        case IR::coreOpcodes::sub_i: // dstRg | src1Rg | src2Rg
         {
             auto val1 = es.valueStack[es.bp + inst.op2];
             auto val2 = es.valueStack[es.bp + inst.op3];
             es.valueStack[es.bp + inst.op1] = val1 - val2;
             break;
         }
-        case IR::coreOpcodes::mul_i:
+        case IR::coreOpcodes::mul_i: // dstRg | src1Rg | src2Rg
         {
             auto val1 = es.valueStack[es.bp + inst.op2];
             auto val2 = es.valueStack[es.bp + inst.op3];
             es.valueStack[es.bp + inst.op1] = val1 * val2;
             break;
         }
-        case IR::coreOpcodes::div_i:
+        case IR::coreOpcodes::div_i: // dstRg | src1Rg | src2Rg
         {
             auto val1 = static_cast<int64_t>(es.valueStack[es.bp + inst.op2]);
             auto val2 = static_cast<int64_t>(es.valueStack[es.bp + inst.op3]);
@@ -355,7 +369,7 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(val1 / val2);
             break;
         }
-        case IR::coreOpcodes::mod_i:
+        case IR::coreOpcodes::mod_i: // dstRg | src1Rg | src2Rg
         {
             auto val1 = static_cast<int64_t>(es.valueStack[es.bp + inst.op2]);
             auto val2 = static_cast<int64_t>(es.valueStack[es.bp + inst.op3]);
@@ -375,28 +389,28 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(val1 % val2);
             break;
         }
-        case IR::coreOpcodes::add_f:
+        case IR::coreOpcodes::add_f: // dstRg | src1Rg | src2Rg
         {
             auto val1 = std::bit_cast<double>(es.valueStack[es.bp + inst.op2]);
             auto val2 = std::bit_cast<double>(es.valueStack[es.bp + inst.op3]);
             es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(val1 + val2);
             break;
         }
-        case IR::coreOpcodes::sub_f:
+        case IR::coreOpcodes::sub_f: // dstRg | src1Rg | src2Rg
         {
             auto val1 = std::bit_cast<double>(es.valueStack[es.bp + inst.op2]);
             auto val2 = std::bit_cast<double>(es.valueStack[es.bp + inst.op3]);
             es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(val1 - val2);
             break;
         }
-        case IR::coreOpcodes::mul_f:
+        case IR::coreOpcodes::mul_f: // dstRg | src1Rg | src2Rg
         {
             auto val1 = std::bit_cast<double>(es.valueStack[es.bp + inst.op2]);
             auto val2 = std::bit_cast<double>(es.valueStack[es.bp + inst.op3]);
             es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(val1 * val2);
             break;
         }
-        case IR::coreOpcodes::div_f:
+        case IR::coreOpcodes::div_f: // dstRg | src1Rg | src2Rg
         {
             auto val1 = std::bit_cast<double>(es.valueStack[es.bp + inst.op2]);
             auto val2 = std::bit_cast<double>(es.valueStack[es.bp + inst.op3]);
@@ -410,21 +424,97 @@ int main(int argc, char** argv) {
             es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(val1 / val2);
             break;
         }
-        case IR::coreOpcodes::and_b:
-        case IR::coreOpcodes::or_b:
-        case IR::coreOpcodes::xor_b:
-        case IR::coreOpcodes::not_b:
-        case IR::coreOpcodes::shl_b:
-        case IR::coreOpcodes::shr_b:
-        case IR::coreOpcodes::cmp_eq_i:
-        case IR::coreOpcodes::cmp_ne_i:
-        case IR::coreOpcodes::cmp_lt_i:
-        case IR::coreOpcodes::cmp_gt_i:
-        case IR::coreOpcodes::cmp_eq_f:
-        case IR::coreOpcodes::cmp_lt_f:
-        case IR::coreOpcodes::cmp_gt_f:
+        case IR::coreOpcodes::and_b: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = es.valueStack[es.bp + inst.op2];
+            auto val2 = es.valueStack[es.bp + inst.op3];
+            es.valueStack[es.bp + inst.op1] = (val1 & val2);
             break;
-            // EXTENSION OPS
+        }
+        case IR::coreOpcodes::or_b: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = es.valueStack[es.bp + inst.op2];
+            auto val2 = es.valueStack[es.bp + inst.op3];
+            es.valueStack[es.bp + inst.op1] = (val1 | val2);
+            break;
+        }
+        case IR::coreOpcodes::xor_b: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = es.valueStack[es.bp + inst.op2];
+            auto val2 = es.valueStack[es.bp + inst.op3];
+            es.valueStack[es.bp + inst.op1] = (val1 ^ val2);
+            break;
+        }
+        case IR::coreOpcodes::not_b: // dstRg | srcRg  | _ 
+        {
+            auto val1 = es.valueStack[es.bp + inst.op2];
+            es.valueStack[es.bp + inst.op1] = !(val1);
+            break;
+        }
+        case IR::coreOpcodes::shl_b: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = es.valueStack[es.bp + inst.op2];
+            auto val2 = es.valueStack[es.bp + inst.op3];
+            es.valueStack[es.bp + inst.op1] = (val1 << (val2 & 0x3F)); // bounds check
+            break;
+        }
+        case IR::coreOpcodes::shr_b: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = es.valueStack[es.bp + inst.op2];
+            auto val2 = es.valueStack[es.bp + inst.op3];
+            es.valueStack[es.bp + inst.op1] = (val1 >> val2);
+            break;
+        }
+        case IR::coreOpcodes::cmp_eq_i: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = es.valueStack[es.bp + inst.op2];
+            auto val2 = es.valueStack[es.bp + inst.op3];
+            es.valueStack[es.bp + inst.op1] = (val1 == val2);
+            break;
+        }
+        case IR::coreOpcodes::cmp_ne_i: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = es.valueStack[es.bp + inst.op2];
+            auto val2 = es.valueStack[es.bp + inst.op3];
+            es.valueStack[es.bp + inst.op1] = (val1 != val2);
+            break;
+        }
+        case IR::coreOpcodes::cmp_lt_i: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = static_cast<int64_t>(es.valueStack[es.bp + inst.op2]);
+            auto val2 = static_cast<int64_t>(es.valueStack[es.bp + inst.op3]);
+            es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(val1 < val2);
+            break;
+        }
+        case IR::coreOpcodes::cmp_gt_i: // dstRg | src1Rg | src2Rg
+        {
+            auto val1 = static_cast<int64_t>(es.valueStack[es.bp + inst.op2]);
+            auto val2 = static_cast<int64_t>(es.valueStack[es.bp + inst.op3]);
+            es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(val1 > val2);
+            break;
+        }
+        case IR::coreOpcodes::cmp_eq_f: //  dstRg | src1Rg | src2Rg
+        {
+            auto val1 = std::bit_cast<double>(es.valueStack[es.bp + inst.op2]);
+            auto val2 = std::bit_cast<double>(es.valueStack[es.bp + inst.op3]);
+            es.valueStack[es.bp + inst.op1] = (val1 == val2);
+            break;
+        }
+        case IR::coreOpcodes::cmp_lt_f: //  dstRg | src1Rg | src2Rg
+        {
+            auto val1 = std::bit_cast<double>(es.valueStack[es.bp + inst.op2]);
+            auto val2 = std::bit_cast<double>(es.valueStack[es.bp + inst.op3]);
+            es.valueStack[es.bp + inst.op1] = (val1 < val2);
+            break;
+        }
+        case IR::coreOpcodes::cmp_gt_f: //  dstRg | src1Rg | src2Rg
+        {
+            auto val1 = std::bit_cast<double>(es.valueStack[es.bp + inst.op2]);
+            auto val2 = std::bit_cast<double>(es.valueStack[es.bp + inst.op3]);
+            es.valueStack[es.bp + inst.op1] = (val1 > val2);
+            break;
+        }
+        // EXTENSION OPS
         case IR::coreOpcodes::now_monotonic:
         case IR::coreOpcodes::now_wallclock:
         case IR::coreOpcodes::vsetvl:
@@ -482,6 +572,7 @@ int main(int argc, char** argv) {
         case IR::coreOpcodes::vreduce_mul_i:
         case IR::coreOpcodes::vreduce_add_f:
         case IR::coreOpcodes::vreduce_max_f:
+            handleNotImplementedYet();
             break;
         }
     }
