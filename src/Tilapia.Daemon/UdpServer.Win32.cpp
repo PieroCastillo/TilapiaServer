@@ -1,12 +1,18 @@
-#include <cstdint>
+module;
 
 #include "common.hpp"
-#include "UdpServer.hpp"
 
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <mswsock.h>
+#endif
+
+module tilapia.daemon.udpserver;
+
+import std;
+
+#ifdef _WIN32
 
 using namespace Tilapia::Daemon;
 
@@ -41,9 +47,9 @@ UdpServer::UdpServer(const UdpServerDesc& desc) :
     WSAStartup(MAKEWORD(2, 2), &wsa);
 
     serverContext->s = WSASocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP, NULL, 0, WSA_FLAG_REGISTERED_IO); // socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    
+
     int optval = 1;
-    if(setsockopt(serverContext->s, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval, sizeof(optval)) == SOCKET_ERROR)
+    if (setsockopt(serverContext->s, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval, sizeof(optval)) == SOCKET_ERROR)
         std::println("RIO: Can't share port {}", port);
 
     GUID functionTableId = WSAID_MULTIPLE_RIO;

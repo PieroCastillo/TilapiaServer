@@ -1,15 +1,12 @@
-/*
-Created by @PieroCastillo on 2026-04-16
-*/
-#ifndef TILAPIA_RUNTIME_IR_HPP
-#define TILAPIA_RUNTIME_IR_HPP
+module;
 
 #include <cstdint>
-#include <limits>
 #include <string>
 #include <vector>
 
-namespace TilapiaServer::Runtime::IR
+export module tilapia.ir;
+
+export namespace Tilapia::Runtime::IR
 {
     enum class coreCaps : uint16_t
     {
@@ -357,4 +354,3 @@ namespace TilapiaServer::Runtime::IR
         std::vector<instruction> instructions;
     };
 };
-#endif // TILAPIA_RUNTIME_IR_HPP

@@ -4,6 +4,16 @@ Created by @PieroCastillo on 2026-04-16
 #ifndef TILAPIA_RUNTIME_API_HPP
 #define TILAPIA_RUNTIME_API_HPP
 
+#if defined(_MSC_VER)
+#define ForceInline __forceinline
+#elif defined(__clang__)
+#define ForceInline __attribute__((always_inline)) inline
+#elif defined(__GNUC__)
+#define ForceInline __attribute__((always_inline)) inline
+#else
+#define ForceInline inline
+#endif
+
 #ifdef _INTELLISENSE
     #include <any>
     #include <array>
@@ -12,6 +22,7 @@ Created by @PieroCastillo on 2026-04-16
     #include <bit>
     #include <concepts>
     #include <cstdint>
+    #include <cstdlib>
     #include <condition_variable>
     #include <expected>
     #include <filesystem>
@@ -39,8 +50,3 @@ Created by @PieroCastillo on 2026-04-16
 #endif
 
 #endif // TILAPIA_RUNTIME_API_HPP
-
-// copy & paste this code every file that includes this header
-#ifndef _INTELLISENSE
-import std;
-#endif

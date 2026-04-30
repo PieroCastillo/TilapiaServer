@@ -1,16 +1,16 @@
 /*
 Created by @PieroCastillo on 2026-04-19
 */
-#ifndef TILAPIA_DAEMON_UDP_SERVER_HPP
-#define TILAPIA_DAEMON_UDP_SERVER_HPP
+module;
 
-#ifdef _INTELLISENSE
+#include "common.hpp"
 #include <cstdint>
 #include <functional>
 #include <span>
-#endif
 
-namespace Tilapia::Daemon
+export module tilapia.daemon.udpserver;
+
+export namespace Tilapia::Daemon
 {
     struct Endpoint
     {
@@ -71,4 +71,3 @@ namespace Tilapia::Daemon
         void Run();
     };
 };
-#endif // TILAPIA_DAEMON_UDP_SERVER_HPP

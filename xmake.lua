@@ -13,7 +13,7 @@ for _, appname in ipairs(apps) do
         set_kind("binary")
         add_includedirs("include/".. appname )
         add_headerfiles("include/" .. appname .. "/**.hpp")
-        add_files("src/" .. appname .. "/**.cppm")
+        add_files("src/" .. appname .. "/**.cppm", {public = true})
         add_files("src/" .. appname .. "/**.cpp")
         set_policy("build.c++.modules", true)
         set_policy("build.optimization.lto", true)

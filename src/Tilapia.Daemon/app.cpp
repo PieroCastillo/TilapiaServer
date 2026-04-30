@@ -1,7 +1,7 @@
-#include <cstdint>
-
 #include "common.hpp"
-#include "UdpServer.hpp"
+
+import std;
+import tilapia.daemon.udpserver;
 
 /*
 base:

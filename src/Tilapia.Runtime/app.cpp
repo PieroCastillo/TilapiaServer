@@ -1,29 +1,13 @@
-#include <stdlib.h>
-
-#include "IR.hpp"
-#include "Instance.hpp"
 #include "common.hpp"
+#include <cstdint>
 
-using namespace TilapiaServer::Runtime;
-using namespace TilapiaServer::Runtime::IR;
+import std;
+import tilapia.ir;
+import tilapia.instance;
+import tilapia.ops;
 
-std::string fakeAsm =
-R"(executionModel plugin
-entryPoint main
-cap core.print
-.ro
-c1 string byteSize "hello tilapia IR"
-.text
-fn main():
-push c1
-call core.print
-decl v1 i32
-add v1 3 2
-ret
-c1 c2 c3 c4 // constant/ro
-w1 w2 w3 w4 // rw static memory
-v1 v2 v3 v4 // stack variables
-)";
+using namespace Tilapia::Runtime;
+using namespace Tilapia::Runtime::IR;
 
 void handleNotImplementedYet()
 {
@@ -74,12 +58,12 @@ int main(int argc, char** argv) {
     {
         // fetch instruction
         const IR::instruction& inst = executable.instructions[es.ip++];
-        uint32_t op = (inst.capId << 16) & inst.opCode;
+        uint32_t op = (inst.capId << 16) | inst.opCode;
 
         // execute instruction
         switch (static_cast<IR::coreOpcodes>(op))
         {
-        case IR::coreOpcodes::nop:
+        case IR::coreOpcodes::nop: execute_nop(es, inst);
             break;
         case IR::coreOpcodes::mov: // dstRg, srcRg
             es.valueStack[es.bp + inst.op1] = es.valueStack[es.bp + inst.op2];

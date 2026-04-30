@@ -1,30 +1,14 @@
 module;
 
-#include <cstdint>
-#include <limits>
-#include <string>
-#include <vector>
-
-#include "IR.hpp"
-#include "Instance.hpp"
 #include "common.hpp"
 
-export module core:control;
+export module tilapia.ops:control;
+import tilapia.ir;
+import tilapia.instance;
 
-#if defined(_MSC_VER)
-#define ForceInline __forceinline
-#elif defined(__clang__)
-#define ForceInline __attribute__((always_inline)) inline
-#elif defined(__GNUC__)
-#define ForceInline __attribute__((always_inline)) inline
-#else
-#define ForceInline inline
-#endif
+using namespace Tilapia::Runtime::IR;
 
-using namespace TilapiaServer::Runtime;
-using namespace TilapiaServer::Runtime::IR;
-
-export namespace TilapiaServer::Runtime
+export namespace Tilapia::Runtime
 {
     ForceInline void execute_nop(Instance& es, const instruction& inst)
     {
