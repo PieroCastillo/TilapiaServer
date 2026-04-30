@@ -1,5 +1,7 @@
 module;
 
+#include <bit>
+#include <cstdint>
 #include "common.hpp"
 
 export module tilapia.ops:control;
@@ -17,151 +19,27 @@ export namespace Tilapia::Runtime
 
     ForceInline void execute_mov(Instance& es, const instruction& inst)
     {
-
+        es.valueStack[es.bp + inst.op1] = es.valueStack[es.bp + inst.op2];
     }
 
     ForceInline void execute_li_i32(Instance& es, const instruction& inst)
     {
-
+        es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(static_cast<int64_t>(static_cast<int32_t>(inst.op2)));
     }
 
     ForceInline void execute_li_u32(Instance& es, const instruction& inst)
     {
-
+        es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(inst.op2);
     }
 
     ForceInline void execute_li_f32(Instance& es, const instruction& inst)
     {
-
+        auto raw_f32 = std::bit_cast<float>(inst.op2);
+        es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(static_cast<double>(raw_f32));
     }
 
     ForceInline void execute_li64(Instance& es, const instruction& inst)
     {
-
-    }
-
-    ForceInline void execute_load_u8(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_load_i16(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_load_i32(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_load_i64(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_load_f32(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_load_f64(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_store_u8(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_store_i16(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_store_i32(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_store_i64(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_store_f32(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_store_f64(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_s_addr(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_alloc(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_free(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_memcpy(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_submem(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_call(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_call_cap(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_call_lib(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_ret(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_jmp(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_br_true(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_br_false(Instance& es, const instruction& inst)
-    {
-
-    }
-
-    ForceInline void execute_br_table(Instance& es, const instruction& inst)
-    {
-
+        es.valueStack[es.bp + inst.op1] = static_cast<uint64_t>(inst.op2) << 32 | static_cast<uint64_t>(inst.op3);
     }
 }
