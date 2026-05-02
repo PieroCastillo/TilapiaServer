@@ -21,3 +21,4 @@
 
 
 - Every field is 64-byte aligned.
+- Jump and Branch instructions use relative offsets;

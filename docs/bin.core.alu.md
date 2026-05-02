@@ -6,7 +6,7 @@
 - ALU COMP INT : 0x0004
 - ALU COMP FLOAT : 0x0005
 
-| Operation Name | OpCode | Op1 | Op2 | Op3 | Hex |
+| Operation Name | Mnemonic | Operand 1 | Operand 2 | Operand 3 | OpCode |
 | --- | ---- | ---- | ---- | ---- | ---- |
 | Integer ALU  | | | | | |
 | Add          | add_i    |   dstRg | src1Rg | src2Rg    | 0x00010001 |

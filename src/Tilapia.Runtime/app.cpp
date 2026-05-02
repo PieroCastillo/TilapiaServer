@@ -2,15 +2,13 @@
 #include <cstdint>
 
 import std;
-import tilapia.ir;
-import tilapia.instance;
+import tilapia.irlib;
 import tilapia.ops;
 import tilapia.ops.time;
 import tilapia.ops.simd;
-import tilapia.assemblyLoader;
 
+using namespace Tilapia::IRLib;
 using namespace Tilapia::Runtime;
-using namespace Tilapia::Runtime::IR;
 
 std::vector<uint8_t> loadFile(const std::filesystem::path& path)
 {
@@ -68,16 +66,18 @@ int main(int argc, char** argv) {
     binary executable = exeRes.value();
     Instance es; // execution state
     ConfigureInstance(&executable, &es, 4 * 1024 * 1024); // 4 MB arena
+    // TODO: impl memprotect for RO | instructions
+
+    return 0;
 
     auto& program = executable.instructions;
     while (es.isRunning)
     {
         // fetch instruction
-        const IR::instruction& inst = executable.instructions[es.ip++];
-        uint32_t op = (static_cast<uint32_t>(inst.syscapId) << 16) | inst.opCode;
+        const instruction& inst = executable.instructions[es.ip++];
 
         // execute instruction
-        switch (static_cast<IR::coreOpcodes>(op))
+        switch (static_cast<coreOpcodes>(inst.opCode))
         {
         case coreOpcodes::nop: execute_nop(es, inst); break;
         case coreOpcodes::mov: execute_mov(es, inst); break;

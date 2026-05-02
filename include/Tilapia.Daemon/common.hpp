@@ -1,8 +1,8 @@
 /*
 Created by @PieroCastillo on 2026-04-16
 */
-#ifndef TILAPIA_DAEMON_API_HPP
-#define TILAPIA_DAEMON_API_HPP
+#ifndef TILAPIA_DAEMON_COMMON_HPP
+#define TILAPIA_DAEMON_COMMON_HPP
 
 #ifdef _INTELLISENSE
 #include <any>
@@ -37,4 +37,4 @@ Created by @PieroCastillo on 2026-04-16
 #include <vector>
 #endif
 
-#endif // TILAPIA_DAEMON_API_HPP
+#endif // TILAPIA_DAEMON_COMMON_HPP

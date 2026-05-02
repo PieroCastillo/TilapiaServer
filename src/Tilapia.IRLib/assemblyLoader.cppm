@@ -4,14 +4,13 @@ module;
 #include <cstdint>
 #include <expected>
 #include <span>
-#include "common.hpp"
+#include <string>
 
-export module tilapia.assemblyLoader;
-import tilapia.ir;
+export module tilapia.irlib:assemblyLoader;
+import :ir;
+import :instance;
 
-using namespace Tilapia::Runtime::IR;
-
-export namespace Tilapia::Runtime
+export namespace Tilapia::IRLib
 {
     enum class ValidationError
     {
@@ -27,6 +26,12 @@ export namespace Tilapia::Runtime
         CapabilityNotSupported,
         DynamicLibraryNotPresent,
     };
+
+    std::string extractString(std::span<const uint8_t> rawBytes, size_t offset, size_t count)
+    {
+        auto ptr = reinterpret_cast<char const*>(rawBytes.data() + offset);
+        return std::string(ptr, count);
+    }
 
     auto validateDesc(const binaryDesc& desc) -> std::expected<void, ValidationError>
     {
@@ -52,17 +57,21 @@ export namespace Tilapia::Runtime
                 return true;
             };
 
-        std::array<uint32_t, 9> offsets
+        std::array<uint32_t, 13> offsets
         {
-            desc.stringPoolOffset,
-            desc.instructionsOffset,
-            desc.functionsOffset,
+            desc.executableNameOffset,
             desc.capabilitiesOffset,
             desc.typesOffset,
-            desc.roDataOffset,
-            desc.rwDataOffset,
+            desc.typesPoolOffset,
             desc.symbolsOffset,
             desc.dynamicLibsOffset,
+            desc.entrypointsOffset,
+            desc.functionsOffset,
+            desc.roDataOffset,
+            desc.roDataPoolOffset,
+            desc.rwDataOffset,
+            desc.rwDataPoolOffset,
+            desc.instructionsOffset,
         };
 
         if (!strictlyIncreasing(offsets))
@@ -100,7 +109,6 @@ export namespace Tilapia::Runtime
             .versionMinor = desc.versionMinor,
             .flags = desc.flags,
             .entrypointOffset = desc.mainEntrypointIndex,
-            .executableName = "name",
         };
 
         exec.capabilities.resize(desc.capabilitiesCount);
@@ -136,6 +144,8 @@ export namespace Tilapia::Runtime
 
         exec.instructions.resize(desc.instructionsCount);
         memcpy(exec.instructions.data(), asmBytes.data() + desc.instructionsOffset, desc.instructionsCount * sizeof(instruction));
+
+        exec.header.executableName = extractString(asmBytes, desc.executableNameOffset, desc.executableNameCharCount);
 
         // TODO: file validation lies here
 

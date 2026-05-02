@@ -4,23 +4,23 @@ module;
 #include <string>
 #include <vector>
 
-export module tilapia.ir;
+export module tilapia.irlib:ir;
 
-export namespace Tilapia::Runtime::IR
+export namespace Tilapia::IRLib
 {
+    /*
+    00 caps are reserved for ext operations
+    */
     enum class coreCaps : uint16_t
     {
-        control = 0x0000,
-        alu = 0x0001,
-        memory = 0x0002,
-        time = 0x0003,
-        simd = 0x0004,
-        random = 0x0005,
-        print = 0x0006,
-        tls13 = 0x0010,
-        quic = 0x0011,
-        http3 = 0x0012,
-        webtransport = 0x0013,
+        time = 0x0006,
+        simd = 0x0007,
+        random = 0x0008,
+        print = 0x0009,
+        tls = 0x1000,
+        quic = 0x1100,
+        http3 = 0x1200,
+        webtransport = 0x1300,
     };
 
     enum class coreDatatype : uint16_t
@@ -324,8 +324,7 @@ export namespace Tilapia::Runtime::IR
 
     struct alignas(16) instruction
     {
-        uint16_t syscapId;
-        uint16_t opCode;
+        uint32_t opCode;
         uint32_t op1, op2, op3;
     };
 
@@ -336,19 +335,10 @@ export namespace Tilapia::Runtime::IR
         uint16_t versionMinor;
         uint32_t flags;
         uint64_t binaryChecksum;
-
         uint32_t mainEntrypointIndex;
-        uint32_t entrypointsOffset;
-        uint32_t entrypointsCount;
 
-        uint32_t stringPoolOffset;
-        uint32_t stringPoolSize;
-
-        uint32_t instructionsOffset;
-        uint32_t instructionsCount;
-
-        uint32_t functionsOffset;
-        uint32_t functionsCount;
+        uint32_t executableNameOffset;
+        uint32_t executableNameCharCount; // ascii characters
 
         uint32_t capabilitiesOffset;
         uint32_t capabilitiesCount;
@@ -357,6 +347,18 @@ export namespace Tilapia::Runtime::IR
         uint32_t typesCount;
         uint32_t typesPoolOffset;
         uint32_t typesPoolSize;
+
+        uint32_t symbolsOffset;
+        uint32_t symbolsCount;
+
+        uint32_t dynamicLibsOffset;
+        uint32_t dynamicLibsCount;
+
+        uint32_t entrypointsOffset;
+        uint32_t entrypointsCount;
+
+        uint32_t functionsOffset;
+        uint32_t functionsCount;
 
         uint32_t roDataOffset;
         uint32_t roDataCount;
@@ -370,11 +372,8 @@ export namespace Tilapia::Runtime::IR
 
         uint32_t uninitializedDataSize;
 
-        uint32_t symbolsOffset;
-        uint32_t symbolsCount;
-
-        uint32_t dynamicLibsOffset;
-        uint32_t dynamicLibsCount;
+        uint32_t instructionsOffset;
+        uint32_t instructionsCount;
     };
 
     /*

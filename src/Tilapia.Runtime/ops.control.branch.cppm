@@ -3,10 +3,9 @@ module;
 #include "common.hpp"
 
 export module tilapia.ops:control.branch;
-import tilapia.ir;
-import tilapia.instance;
+import tilapia.irlib;
 
-using namespace Tilapia::Runtime::IR;
+using namespace Tilapia::IRLib;
 
 export namespace Tilapia::Runtime
 {

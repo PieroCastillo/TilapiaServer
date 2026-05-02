@@ -2,7 +2,7 @@
 
 CONTROL : 0x0000
 
-| Operation Name | OpCode | Op1 | Op2 | Op3 | Hex |
+| Operation Name | Mnemonic | Operand 1 | Operand 2 | Operand 3 | OpCode |
 | --- | ---- | ---- | ---- | ---- | ---- |
 | No Operation            | nop        | _ | _ | _  | 0x00000000 |
 | Move                    | mov        | dstRg | srcRg | _  | 0x00000001 |
@@ -22,9 +22,9 @@ CONTROL : 0x0000
 | Store i64               | store_i64  | dstAddressRg | srcValueRg | dstOffsetRg | 0x0000000F |
 | Store f32               | store_f32  | dstAddressRg | srcValueRg | dstOffsetRg | 0x00000010 |
 | Store f64               | store_f64  | dstAddressRg | srcValueRg | dstOffsetRg | 0x00000011 |
-| Get Static Address      | s_addr     | dstRg | srcAddressRg | offsetRg   | 0x00000012 |
-| Allocate                | alloc      | dstRg | srcAddressRg | offsetRg   | 0x00000013 |
-| Free                    | free       | dstRg | srcAddressRg | offsetRg   | 0x00000014 |
+| Get Static Address      | s_addr     | dstFatPtrRg | sizeRg | offsetRg   | 0x00000012 |
+| Allocate                | alloc      | dstFatPtrRg | sizeRg | alignmentRg   | 0x00000013 |
+| Free                    | free       | ptrRg | _ | _  | 0x00000014 |
 | Memory Copy             | memcpy     | dstRg | srcAddressRg | offsetRg   | 0x00000015 |
 | Subdivide Memory        | submem     | dstRg | srcAddressRg | offsetRg   | 0x00000016 |
 | Call Function           | call       | funcID | firstRg | -      | 0x00000017 |

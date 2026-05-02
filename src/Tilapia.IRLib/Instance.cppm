@@ -3,12 +3,11 @@ module;
 #include <cstdint>
 #include <cstdlib>
 #include <vector>
-#include "common.hpp"
 
-export module tilapia.instance;
-import tilapia.ir;
+export module tilapia.irlib:instance;
+import :ir;
 
-export namespace Tilapia::Runtime
+export namespace Tilapia::IRLib
 {
     struct CallFrame
     {
@@ -38,7 +37,7 @@ export namespace Tilapia::Runtime
         return (addr + (align - 1)) & ~(align - 1);
     }
 
-    void ConfigureInstance(IR::binary* exe, Instance* instance, uint32_t arenaSize)
+    void ConfigureInstance(binary* exe, Instance* instance, uint32_t arenaSize)
     {
         constexpr uint32_t align = 64;
         instance->ip = exe->header.entrypointOffset;
