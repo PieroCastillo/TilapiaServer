@@ -17,7 +17,11 @@ export namespace Tilapia::Runtime
 
     ForceInline void execute_call_cap(Instance& es, const instruction& inst)
     {
+        auto cap = inst.op1;
+        auto funcID = inst.op2;
+        auto firstRg = inst.op3;
 
+        
     }
 
     ForceInline void execute_call_lib(Instance& es, const instruction& inst)

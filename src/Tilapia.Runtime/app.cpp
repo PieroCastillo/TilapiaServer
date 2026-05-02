@@ -7,9 +7,28 @@ import tilapia.instance;
 import tilapia.ops;
 import tilapia.ops.time;
 import tilapia.ops.simd;
+import tilapia.assemblyLoader;
 
 using namespace Tilapia::Runtime;
 using namespace Tilapia::Runtime::IR;
+
+std::vector<uint8_t> loadFile(const std::filesystem::path& path)
+{
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+
+    if (!file)
+        throw std::runtime_error("Can't open file");
+
+    const auto size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<uint8_t> buffer(size);
+
+    if (!file.read(reinterpret_cast<char*>(buffer.data()), size))
+        throw std::runtime_error("File reading error");
+
+    return buffer;
+}
 
 int main(int argc, char** argv) {
     std::println("Tilapia Runtime v0.1");
@@ -20,9 +39,17 @@ int main(int argc, char** argv) {
     {
         std::println("Invalid Input");
     }
+    auto asmBytes = loadFile(asmPath);
+    auto binDesc = loadDesc(asmBytes);
+    if (!binDesc)
+    {
+        std::print("File Description Error");
+        return -1;
+    }
 
     /*
     execBinary = load(asmPath); // converts raw data to spec-valid IR Assembly
+
     validate(execBinary); // check caps
     -- validate stack registers (really important, stack overflow if dont)
     -- check capabilities
@@ -31,7 +58,14 @@ int main(int argc, char** argv) {
     while()0x0400IR
     */
 
-    binary executable;
+    auto exeRes = loadBin(asmBytes, binDesc.value());
+    if (!exeRes)
+    {
+        std::print("Internal File Error");
+        return -1;
+    }
+
+    binary executable = exeRes.value();
     Instance es; // execution state
     ConfigureInstance(&executable, &es, 4 * 1024 * 1024); // 4 MB arena
 
@@ -40,7 +74,7 @@ int main(int argc, char** argv) {
     {
         // fetch instruction
         const IR::instruction& inst = executable.instructions[es.ip++];
-        uint32_t op = (inst.capId << 16) | inst.opCode;
+        uint32_t op = (static_cast<uint32_t>(inst.syscapId) << 16) | inst.opCode;
 
         // execute instruction
         switch (static_cast<IR::coreOpcodes>(op))
@@ -76,37 +110,37 @@ int main(int argc, char** argv) {
         case coreOpcodes::br_true: execute_br_true(es, inst); break;
         case coreOpcodes::br_false: execute_br_false(es, inst); break;
         case coreOpcodes::br_table: execute_br_table(es, inst); break;
-        
+
         case coreOpcodes::add_i: execute_add_i(es, inst); break;
         case coreOpcodes::sub_i: execute_sub_i(es, inst); break;
         case coreOpcodes::mul_i: execute_mul_i(es, inst); break;
         case coreOpcodes::div_i: execute_div_i(es, inst); break;
         case coreOpcodes::mod_i: execute_mod_i(es, inst); break;
-        
+
         case coreOpcodes::add_f: execute_add_f(es, inst); break;
         case coreOpcodes::sub_f: execute_sub_f(es, inst); break;
         case coreOpcodes::mul_f: execute_mul_f(es, inst); break;
         case coreOpcodes::div_f: execute_div_f(es, inst); break;
-        
+
         case coreOpcodes::and_b: execute_and_b(es, inst); break;
         case coreOpcodes::or_b: execute_or_b(es, inst); break;
         case coreOpcodes::xor_b: execute_xor_b(es, inst); break;
         case coreOpcodes::not_b: execute_not_b(es, inst); break;
         case coreOpcodes::shl_b: execute_shl_b(es, inst); break;
         case coreOpcodes::shr_b: execute_shr_b(es, inst); break;
-        
+
         case coreOpcodes::cmp_eq_i: execute_cmp_eq_i(es, inst); break;
         case coreOpcodes::cmp_ne_i: execute_cmp_ne_i(es, inst); break;
         case coreOpcodes::cmp_lt_i: execute_cmp_lt_i(es, inst); break;
         case coreOpcodes::cmp_gt_i: execute_cmp_gt_i(es, inst); break;
-        
+
         case coreOpcodes::cmp_eq_f: execute_cmp_eq_f(es, inst); break;
         case coreOpcodes::cmp_lt_f: execute_cmp_lt_f(es, inst); break;
         case coreOpcodes::cmp_gt_f: execute_cmp_gt_f(es, inst); break;
-        
+
         case coreOpcodes::now_monotonic: execute_now_monotonic(es, inst); break;
         case coreOpcodes::now_wallclock: execute_now_wallclock(es, inst); break;
-        
+
         case coreOpcodes::vsetvl: execute_vsetvl(es, inst); break;
         case coreOpcodes::vload: execute_vload(es, inst); break;
         case coreOpcodes::vstore: execute_vstore(es, inst); break;
