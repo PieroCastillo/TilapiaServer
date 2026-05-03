@@ -53,7 +53,6 @@ int main(int argc, char** argv) {
     -- check capabilities
     -- check function arguments
     -- validate calls for dynamic libs & capabilities
-    while()0x0400IR
     */
 
     auto exeRes = loadBin(asmBytes, binDesc.value());
@@ -66,15 +65,13 @@ int main(int argc, char** argv) {
     binary executable = exeRes.value();
     Instance es; // execution state
     ConfigureInstance(&executable, &es, 4 * 1024 * 1024); // 4 MB arena
+    es.isRunning = true;
     // TODO: impl memprotect for RO | instructions
 
-    return 0;
-
-    auto& program = executable.instructions;
     while (es.isRunning)
     {
         // fetch instruction
-        const instruction& inst = executable.instructions[es.ip++];
+        const instruction& inst = executable.instructions[es.ip];
 
         // execute instruction
         switch (static_cast<coreOpcodes>(inst.opCode))
@@ -105,7 +102,14 @@ int main(int argc, char** argv) {
         case coreOpcodes::call: execute_call(es, inst); break;
         case coreOpcodes::call_cap: execute_call_cap(es, inst); break;
         case coreOpcodes::call_lib: execute_call_lib(es, inst); break;
-        case coreOpcodes::ret: execute_ret(es, inst); break;
+        case coreOpcodes::ret: {
+            if (es.callStack.empty()) [[unlikely]]
+            {
+                es.isRunning = false;
+            }
+            execute_ret(es, inst);
+            break;
+        }
         case coreOpcodes::jmp: execute_jmp(es, inst); break;
         case coreOpcodes::br_true: execute_br_true(es, inst); break;
         case coreOpcodes::br_false: execute_br_false(es, inst); break;
@@ -197,6 +201,8 @@ int main(int argc, char** argv) {
         case coreOpcodes::vreduce_add_f: execute_vreduce_add_f(es, inst); break;
         case coreOpcodes::vreduce_max_f: execute_vreduce_max_f(es, inst); break;
         }
+
+        ++es.ip;
     }
     return 0;
 }

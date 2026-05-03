@@ -13,6 +13,9 @@ local apps = {
     { name = "Tilapia.IRVis", deps = { "Tilapia.IRLib" } },
 }
 
+local tests = {
+    { name = "makeBin", deps = { "Tilapia.IRLib" } },
+}
 
 for _, libname in ipairs(libs) do
     target(libname)
@@ -38,6 +41,21 @@ for _, app in ipairs(apps) do
 
         if #app.deps > 0 then
             add_deps(table.unpack(app.deps))
+        end
+
+        if is_plat("windows") then
+            add_links("ws2_32")
+        end
+end
+
+for _, test in ipairs(tests) do
+    target(test.name)
+        set_kind("binary")
+        add_files("tests/" .. test.name .. "/**.cpp")
+        set_policy("build.c++.modules", true)
+
+        if #test.deps > 0 then
+            add_deps(table.unpack(test.deps))
         end
 
         if is_plat("windows") then

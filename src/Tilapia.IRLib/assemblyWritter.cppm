@@ -70,7 +70,7 @@ export namespace Tilapia::IRLib
             std::memcpy(buffer.data() + offset, src, bytes);
     }
 
-    auto makeBinary(const binary& bin) -> std::vector<uint8_t>
+    auto makeBinary(const binary& bin, uint32_t mainEntrypointIdx = 0) -> std::vector<uint8_t>
     {
         constexpr uint32_t alignment = 64;
         std::vector<uint8_t> asmBytes;
@@ -81,7 +81,7 @@ export namespace Tilapia::IRLib
         desc.versionMinor = 0;
         desc.flags = 0x0000000;
         desc.binaryChecksum = 0x00000000;
-        desc.mainEntrypointIndex = 0;
+        desc.mainEntrypointIndex = mainEntrypointIdx;
         desc.executableNameCharCount = bin.header.executableName.size(); // ascii characters
 
         desc.capabilitiesCount = bin.capabilities.size();
@@ -104,7 +104,7 @@ export namespace Tilapia::IRLib
         // nvm, i'm going to copy the corrected version after 
         uint32_t dummyOffset = 0;
         append(asmBytes, desc, alignment, 0, dummyOffset);
-        append(asmBytes, bin.header.executableName, alignment, dummyOffset, desc.executableNameOffset);
+        append(asmBytes, bin.header.executableName, alignment, sizeof(binaryDesc), desc.executableNameOffset);
         append(asmBytes, bin.capabilities, alignment, desc.executableNameOffset, desc.capabilitiesOffset);
         append(asmBytes, bin.types, alignment, desc.capabilitiesOffset, desc.typesOffset);
         append(asmBytes, bin.typesPool, alignment, desc.typesOffset, desc.typesPoolOffset);
@@ -120,5 +120,7 @@ export namespace Tilapia::IRLib
 
         // full copy of binaryDesc
         memcpy(asmBytes.data(), &desc, sizeof(binaryDesc));
+        
+        return asmBytes;
     }
 }

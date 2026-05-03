@@ -61,7 +61,7 @@ export namespace Tilapia::IRLib
         instance->memoryArena.resize(fullMemorySize, 0);
 
         // copy
-        memcpy((void*)((uint8_t*)instance->memoryArena.data() + 0), exe->readOnlyDataPool.data(), exe->readOnlyDataSize);
-        memcpy((void*)((uint8_t*)instance->memoryArena.data() + instance->rwOffset), exe->readWriteDataPool.data(), exe->readWriteDataSize);
+        memcpy((void*)((uint8_t*)instance->memoryArena.data()), exe->readOnlyDataPool.data(), exe->readOnlyDataPool.size());
+        memcpy((void*)((uint8_t*)instance->memoryArena.data() + instance->rwOffset), exe->readWriteDataPool.data(), exe->readWriteDataPool.size());
     }
 };

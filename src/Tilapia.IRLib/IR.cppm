@@ -38,10 +38,9 @@ export namespace Tilapia::IRLib
         f64 = 0x0028,
         boolean = 0x0031,
 
-        memhandle = 0x0100,
-        reshandle = 0x0200,
-        string = 0x0300,
-        span = 0x0400,
+        reshandle = 0x0100,
+        string = 0x0200,
+        span = 0x0300,
     };
 
     enum class coreOpcodes : uint32_t
@@ -273,7 +272,7 @@ export namespace Tilapia::IRLib
 
     struct capabilityEntry
     {
-        uint16_t capId;
+        coreCaps capId;
         uint16_t versionMajor;
         uint16_t versionMinor;
         uint32_t flags;
