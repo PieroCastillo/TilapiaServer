@@ -73,9 +73,21 @@ namespace Tilapia::Platform
         return cmd;
     }
 
-    void EnsureSingle()
+    bool EnsureSingle()
     {
+        HANDLE hMutex = nullptr;
+        constexpr wchar_t kMutexName[] = L"Global\\Tilapia_Daemon_UniqueMutex";
+        hMutex = CreateMutexW(nullptr, TRUE, kMutexName);
+        if (!hMutex)
+            return false;
 
+        if (GetLastError() == ERROR_ALREADY_EXISTS)
+        {
+            CloseHandle(hMutex);
+            hMutex = nullptr;
+            return false;
+        }
+        return true;
     }
 
     auto RunProcess(const std::filesystem::path& appPath, std::span<const std::string> args) -> Process

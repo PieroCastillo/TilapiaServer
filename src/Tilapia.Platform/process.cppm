@@ -17,7 +17,7 @@ export namespace Tilapia::Platform
         uint32_t pid;
         uint64_t handle;
     };
-    void EnsureSingle();
+    bool EnsureSingle();
     auto RunProcess(const std::filesystem::path& appPath, std::span<const std::string> args) -> Process;
     void KillProcess(const Process& process);
     void DetachProcess(const Process& process);

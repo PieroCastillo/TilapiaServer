@@ -23,10 +23,20 @@ std::unique_ptr<Tilapia::Daemon::UdpServer> server;
 
 int main(int argc, char** argv)
 {
+    auto args = std::vector<std::string>(argv, argv + argc);
     // NOW, WINDOWS ONLY (next step, imlp udp for win/linux)
     std::println("Tilapia Daemon v0.1");
+    // print args
+    for(const auto& arg : args)
+        std::print("{} ", arg);
+    std::println();
     
-    Tilapia::Platform::EnsureSingle();
+    if(!Tilapia::Platform::EnsureSingle())
+    {
+        std::println("Tilapia Daemon is already running");
+        return 0;
+    }
+
     auto mem = Tilapia::Platform::sharedAlloc(1024);
 
     Tilapia::Daemon::UdpServerDesc servDesc =
