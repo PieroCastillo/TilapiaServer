@@ -1,8 +1,5 @@
-module;
-
 #include <tuple>
 #include <vector>
-#include "common.hpp"
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -15,19 +12,13 @@ module;
 #include <tchar.h>
 #endif
 
-module tilapia.platform;
-
 import std;
+import tilapia.platform;
 
 #ifdef _WIN32
 
-namespace Tilapia::Daemon
+namespace Tilapia::Platform
 {
-    void ensureSingle()
-    {
-
-    }
-
     SharedMemory::~SharedMemory()
     {
         if (data)

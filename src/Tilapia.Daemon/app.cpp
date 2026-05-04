@@ -9,7 +9,7 @@ base:
 UDP
 QUIC
 HTTP/3
-WebTransport
+WebTransportv
 compatibility:
 TLS 1.3
 HTTP/2
@@ -26,8 +26,8 @@ int main(int argc, char** argv)
     // NOW, WINDOWS ONLY (next step, imlp udp for win/linux)
     std::println("Tilapia Daemon v0.1");
     
-    Tilapia::Daemon::ensureSingle();
-    auto mem = Tilapia::Daemon::sharedAlloc(1024);
+    Tilapia::Platform::EnsureSingle();
+    auto mem = Tilapia::Platform::sharedAlloc(1024);
 
     Tilapia::Daemon::UdpServerDesc servDesc =
     {

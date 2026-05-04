@@ -8,12 +8,10 @@ module;
 #include <string_view>
 #include <tuple>
 
-export module tilapia.platform;
+export module tilapia.platform:sharedMemory;
 
-export namespace Tilapia::Daemon
+export namespace Tilapia::Platform
 {
-    void ensureSingle();
-
     struct SharedMemory
     {
         uint8_t* data{};

@@ -5,11 +5,13 @@ add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 
 local libs = {
     "Tilapia.IRLib",
+    "Tilapia.Platform"
 }
 
 local apps = {
-    { name = "Tilapia.Daemon", deps = {} },
-    { name = "Tilapia.Runtime", deps = { "Tilapia.IRLib" } },
+    { name = "Tilapia.CLI", deps = { "Tilapia.Platform" } },
+    { name = "Tilapia.Daemon", deps = { "Tilapia.Platform" } },
+    { name = "Tilapia.Runtime", deps = { "Tilapia.IRLib", "Tilapia.Platform" } },
     { name = "Tilapia.IRVis", deps = { "Tilapia.IRLib" } },
 }
 
@@ -21,6 +23,10 @@ for _, libname in ipairs(libs) do
     target(libname)
         set_kind("static")
         add_files("src/" .. libname .. "/**.cppm", {public = true})
+        local srcFiles = os.files("src/" .. libname .. "/**.cpp")
+        if #srcFiles > 0 then
+            add_files(srcFiles)
+        end
         set_policy("build.c++.modules", true)
         set_policy("build.optimization.lto", true)
 
