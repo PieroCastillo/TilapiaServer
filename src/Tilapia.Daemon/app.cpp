@@ -2,6 +2,7 @@
 
 import std;
 import tilapia.daemon.udpserver;
+import tilapia.platform;
 
 /*
 base:
@@ -15,6 +16,7 @@ HTTP/2
 WebSockets
 SSE
 gRPC
+run daemon
 */
 
 std::unique_ptr<Tilapia::Daemon::UdpServer> server;
@@ -22,8 +24,11 @@ std::unique_ptr<Tilapia::Daemon::UdpServer> server;
 int main(int argc, char** argv)
 {
     // NOW, WINDOWS ONLY (next step, imlp udp for win/linux)
-    std::println("Tilapia Core Service v0.1");
+    std::println("Tilapia Daemon v0.1");
     
+    Tilapia::Daemon::ensureSingle();
+    auto mem = Tilapia::Daemon::sharedAlloc(1024);
+
     Tilapia::Daemon::UdpServerDesc servDesc =
     {
         .port = 8888,

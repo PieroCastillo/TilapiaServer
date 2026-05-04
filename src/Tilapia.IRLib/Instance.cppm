@@ -6,6 +6,7 @@ module;
 
 export module tilapia.irlib:instance;
 import :ir;
+import :utils;
 
 export namespace Tilapia::IRLib
 {
@@ -31,11 +32,6 @@ export namespace Tilapia::IRLib
         bool isRunning = false;
         int32_t exitCode = 0;
     };
-
-    inline uint32_t alignUp(uint32_t addr, uint32_t align)
-    {
-        return (addr + (align - 1)) & ~(align - 1);
-    }
 
     void ConfigureInstance(binary* exe, Instance* instance, uint32_t arenaSize)
     {
