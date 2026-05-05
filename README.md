@@ -2,7 +2,14 @@
 Server Runtime (just for fun)
 
 how to try:
-build all
-run makeBin
-run Visualizer (optional)
-run Runtime
+´´´
+xmake f -m debug
+xmake build all
+xmake run makeBin
+xmake run Tilapia.Runtime
+> ./gen/helloWorldTest.tir
+´´´
+You should see the follow output:
+´´´
+hello world
+´´´

@@ -1,4 +1,5 @@
 #include "common.hpp"
+#include <algorithm>
 #include <cstdint>
 
 import std;
@@ -25,15 +26,25 @@ std::vector<uint8_t> loadFile(const std::filesystem::path& path)
     return buffer;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     auto args = std::vector<std::string>(argv, argv + argc);
     std::println("Tilapia IR Visualizer v0.1");
+    std::println("usage: Tilapia.IRVis [d] filePath");
+    std::println("> d : shows binary description");
 
-    std::string asmPath;
+    // print args
+    std::println("args:");
+    for (const auto& arg : args)
+        std::println("  > {}", arg);
 
-    if (!(std::cin >> asmPath))
+    auto showBinDesc = std::ranges::contains(args, "d");
+
+    auto asmPath = std::filesystem::path(args.back());
+    if (!std::filesystem::exists(asmPath))
     {
-        std::println("Invalid Input");
+        std::println("File {} does not exists.", asmPath.filename().string());
+        return 0;
     }
 
     auto asmBytes = loadFile(asmPath);
@@ -45,36 +56,39 @@ int main(int argc, char** argv) {
     }
     auto binDesc = binDescRes.value();
 
-    // std::println("DESCRIPTION (FIRST 128 BYTES)");
-    // std::println("executableNameOffset   : {} ", binDesc.executableNameOffset);
-    // std::println("capabilitiesOffset     : {} ", binDesc.capabilitiesOffset);
-    // std::println("typesOffset            : {} ", binDesc.typesOffset);
-    // std::println("typesPoolOffset        : {} ", binDesc.typesPoolOffset);
-    // std::println("symbolsOffset          : {} ", binDesc.symbolsOffset);
-    // std::println("dynamicLibsOffset      : {} ", binDesc.dynamicLibsOffset);
-    // std::println("entrypointsOffset      : {} ", binDesc.entrypointsOffset);
-    // std::println("functionsOffset        : {} ", binDesc.functionsOffset);
-    // std::println("roDataOffset           : {} ", binDesc.roDataOffset);
-    // std::println("roDataPoolOffset       : {} ", binDesc.roDataPoolOffset);
-    // std::println("rwDataOffset           : {} ", binDesc.rwDataOffset);
-    // std::println("rwDataPoolOffset       : {} ", binDesc.rwDataPoolOffset);
-    // std::println("Instructions Offset    : {} ", binDesc.instructionsOffset);
+    if (showBinDesc)
+    {
+        std::println("DESCRIPTION (FIRST 192 BYTES)");
+        std::println("executableNameOffset   : {} ", binDesc.executableNameOffset);
+        std::println("capabilitiesOffset     : {} ", binDesc.capabilitiesOffset);
+        std::println("typesOffset            : {} ", binDesc.typesOffset);
+        std::println("typesPoolOffset        : {} ", binDesc.typesPoolOffset);
+        std::println("symbolsOffset          : {} ", binDesc.symbolsOffset);
+        std::println("dynamicLibsOffset      : {} ", binDesc.dynamicLibsOffset);
+        std::println("entrypointsOffset      : {} ", binDesc.entrypointsOffset);
+        std::println("functionsOffset        : {} ", binDesc.functionsOffset);
+        std::println("roDataOffset           : {} ", binDesc.roDataOffset);
+        std::println("roDataPoolOffset       : {} ", binDesc.roDataPoolOffset);
+        std::println("rwDataOffset           : {} ", binDesc.rwDataOffset);
+        std::println("rwDataPoolOffset       : {} ", binDesc.rwDataPoolOffset);
+        std::println("Instructions Offset    : {} ", binDesc.instructionsOffset);
 
-    // std::println("executableNameCharCount : {} ", binDesc.executableNameCharCount);
-    // std::println("capabilitiesCount      : {} ", binDesc.capabilitiesCount);
-    // std::println("typesCount             : {} ", binDesc.typesCount);
-    // std::println("symbolsCount           : {} ", binDesc.symbolsCount);
-    // std::println("dynamicLibsCount       : {} ", binDesc.dynamicLibsCount);
-    // std::println("entrypointsCount       : {} ", binDesc.entrypointsCount);
-    // std::println("functionsCount         : {} ", binDesc.functionsCount);
-    // std::println("roDataCount            : {} ", binDesc.roDataCount);
-    // std::println("rwDataCount            : {} ", binDesc.rwDataCount);
-    // std::println("Instructions Count     : {} ", binDesc.instructionsCount);
+        std::println("executableNameCharCount : {} ", binDesc.executableNameCharCount);
+        std::println("capabilitiesCount      : {} ", binDesc.capabilitiesCount);
+        std::println("typesCount             : {} ", binDesc.typesCount);
+        std::println("symbolsCount           : {} ", binDesc.symbolsCount);
+        std::println("dynamicLibsCount       : {} ", binDesc.dynamicLibsCount);
+        std::println("entrypointsCount       : {} ", binDesc.entrypointsCount);
+        std::println("functionsCount         : {} ", binDesc.functionsCount);
+        std::println("roDataCount            : {} ", binDesc.roDataCount);
+        std::println("rwDataCount            : {} ", binDesc.rwDataCount);
+        std::println("Instructions Count     : {} ", binDesc.instructionsCount);
 
-    // std::println("typesPoolSize          : {} ", binDesc.typesPoolSize);
-    // std::println("roDataPoolSize         : {} ", binDesc.roDataPoolSize);
-    // std::println("rwDataPoolSize         : {} ", binDesc.rwDataPoolSize);
-    // std::println("uninitializedDataSize  : {} ", binDesc.uninitializedDataSize);
+        std::println("typesPoolSize          : {} ", binDesc.typesPoolSize);
+        std::println("roDataPoolSize         : {} ", binDesc.roDataPoolSize);
+        std::println("rwDataPoolSize         : {} ", binDesc.rwDataPoolSize);
+        std::println("uninitializedDataSize  : {} ", binDesc.uninitializedDataSize);
+    }
 
     auto exeRes = loadBin(asmBytes, binDesc);
     if (!exeRes)
