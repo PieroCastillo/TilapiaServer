@@ -27,10 +27,11 @@ int main(int argc, char** argv)
     // NOW, WINDOWS ONLY (next step, imlp udp for win/linux)
     std::println("Tilapia Daemon v0.1");
     // print args
+    std::println("args:");
     for(const auto& arg : args)
-        std::print("{} ", arg);
+        std::print("  > {} ", arg);
     std::println();
-    
+
     if(!Tilapia::Platform::EnsureSingle())
     {
         std::println("Tilapia Daemon is already running");
