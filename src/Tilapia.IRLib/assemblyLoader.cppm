@@ -83,7 +83,7 @@ export namespace Tilapia::IRLib
     auto loadDesc(std::span<const uint8_t> asmBytes, bool validate = true) -> std::expected<binaryDesc, ValidationError>
     {
         binaryDesc desc = {};
-        // read first 128 bytes
+        // read first 192 bytes
         memcpy(&desc, asmBytes.data(), sizeof(binaryDesc));
 
         // validation

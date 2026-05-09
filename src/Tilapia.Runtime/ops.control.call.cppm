@@ -15,7 +15,7 @@ export namespace Tilapia::Runtime
 {
     ForceInline void execute_call(Instance& es, const instruction& inst)
     {
-
+        
     }
 
     ForceInline void execute_call_cap(Instance& es, const instruction& inst)
@@ -46,7 +46,10 @@ export namespace Tilapia::Runtime
 
     ForceInline void execute_ret(Instance& es, const instruction& inst)
     {
-
+        if (es.callStack.empty()) [[unlikely]]
+        {
+            es.isRunning = false;
+        }
     }
 
     ForceInline void execute_jmp(Instance& es, const instruction& inst)

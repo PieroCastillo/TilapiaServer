@@ -102,14 +102,7 @@ int main(int argc, char** argv) {
         case coreOpcodes::call: execute_call(es, inst); break;
         case coreOpcodes::call_cap: execute_call_cap(es, inst); break;
         case coreOpcodes::call_lib: execute_call_lib(es, inst); break;
-        case coreOpcodes::ret: {
-            if (es.callStack.empty()) [[unlikely]]
-            {
-                es.isRunning = false;
-            }
-            execute_ret(es, inst);
-            break;
-        }
+        case coreOpcodes::ret: execute_ret(es, inst); break;
         case coreOpcodes::jmp: execute_jmp(es, inst); break;
         case coreOpcodes::br_true: execute_br_true(es, inst); break;
         case coreOpcodes::br_false: execute_br_false(es, inst); break;

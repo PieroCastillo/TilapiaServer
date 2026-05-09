@@ -4,6 +4,9 @@ import std;
 import tilapia.platform;
 import tilapia.cli;
 
+const std::string daemonSocketName = "tilapia_daemon.sock";
+Tilapia::Platform::Socket clientSocket;
+
 int main(int argc, char** argv)
 {
     std::println("Tilapia CLI v0.1");
@@ -11,5 +14,21 @@ int main(int argc, char** argv)
     std::vector<std::string> args = { "arg0" };
     auto daemon = Tilapia::Platform::RunProcess(daemonPath, args);
     Tilapia::Platform::DetachProcess(daemon);
+
+    Tilapia::Platform::InitSocketsAPI();
+    clientSocket = Tilapia::Platform::Connect(Tilapia::Platform::BuildSocketPath(daemonSocketName));
+
+    // while(true)
+    // {
+    std::string input;
+    std::getline(std::cin, input);
+
+    auto payloadSize = input.size();
+    Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(&payloadSize), sizeof(payloadSize)));
+    Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(input.data()), payloadSize));
+    // }
+
+    Tilapia::Platform::Close(clientSocket);
+    Tilapia::Platform::CleanupSocketsAPI();
     return 0;
 }

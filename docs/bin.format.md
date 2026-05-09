@@ -23,3 +23,4 @@
 - Every field is 64-byte aligned.
 - Jump and Branch instructions use relative offsets.
 - Every function finish using ```ret```.
+- At least one entrypoint MUST be defined.

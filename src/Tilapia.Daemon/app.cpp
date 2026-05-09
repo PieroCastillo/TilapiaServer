@@ -19,6 +19,9 @@ gRPC
 run daemon
 */
 
+const std::string daemonSocketName = "tilapia_daemon.sock";
+Tilapia::Platform::Socket serverSocket;
+
 std::unique_ptr<Tilapia::Daemon::UdpServer> server;
 
 int main(int argc, char** argv)
@@ -28,26 +31,62 @@ int main(int argc, char** argv)
     std::println("Tilapia Daemon v0.1");
     // print args
     std::println("args:");
-    for(const auto& arg : args)
+    for (const auto& arg : args)
         std::print("  > {} ", arg);
     std::println();
 
-    if(!Tilapia::Platform::EnsureSingle())
+    if (!Tilapia::Platform::EnsureSingle())
     {
         std::println("Tilapia Daemon is already running");
         return 0;
     }
 
-    auto mem = Tilapia::Platform::sharedAlloc(1024);
+    Tilapia::Platform::InitSocketsAPI();
+    serverSocket = Tilapia::Platform::ConfigureServer(Tilapia::Platform::BuildSocketPath(daemonSocketName), 10);
 
-    Tilapia::Daemon::UdpServerDesc servDesc =
+    if (!IsValid(serverSocket))
     {
-        .port = 8888,
-        .packetSize = 1024,
-        .packetCount = 64,
-    };
-    server = std::make_unique<Tilapia::Daemon::UdpServer>(servDesc);
-    server->Run();
+        std::println("bad config");
+        return 0;
+    }
+
+    while (true)
+    {
+        auto clientSck = Tilapia::Platform::Accept(serverSocket);
+        if(!IsValid(clientSck))
+        {
+            continue;
+        }
+
+        // process events
+        uint32_t strSize = 0;
+        Tilapia::Platform::Recv(clientSck, std::span(reinterpret_cast<uint8_t*>(&strSize), sizeof(strSize)));
+
+        std::string strBuffer;
+        strBuffer.resize(strSize);
+        Tilapia::Platform::Recv(clientSck, std::span(reinterpret_cast<uint8_t*>(strBuffer.data()), strSize));
+    }
+
+    std::println("recv: {} bytes, msg: {}", strSize, strBuffer);
+
+    //     if(strBuffer == "hola")
+    //     {
+    //         break;
+    //     }
+    // }
+
+    Tilapia::Platform::Close(serverSocket);
+    Tilapia::Platform::CleanupSocketsAPI();
+
+    // auto mem = Tilapia::Platform::sharedAlloc(1024);
+    // Tilapia::Daemon::UdpServerDesc servDesc =
+    // {
+    //     .port = 8888,
+    //     .packetSize = 1024,
+    //     .packetCount = 64,
+    // };
+    // server = std::make_unique<Tilapia::Daemon::UdpServer>(servDesc);
+    // server->Run();
 
     return 0;
 }
