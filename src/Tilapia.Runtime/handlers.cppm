@@ -9,6 +9,11 @@ using namespace Tilapia::IRLib;
 
 export namespace Tilapia::Runtime
 {
+    void handleUseAfterFree()
+    {
+        
+    }
+
     void handleNotImplementedYet()
     {
 

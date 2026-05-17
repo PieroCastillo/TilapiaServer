@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
         case coreOpcodes::store_i64: execute_store_i64(es, inst); break;
         case coreOpcodes::store_f32: execute_store_f32(es, inst); break;
         case coreOpcodes::store_f64: execute_store_f64(es, inst); break;
-        case coreOpcodes::s_addr: execute_s_addr(es, inst); break;
+        case coreOpcodes::salloc: execute_salloc(es, inst); break;
         case coreOpcodes::alloc: execute_alloc(es, inst); break;
         case coreOpcodes::free: execute_free(es, inst); break;
         case coreOpcodes::memcpy: execute_memcpy(es, inst); break;

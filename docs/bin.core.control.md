@@ -22,10 +22,10 @@ CONTROL : 0x0000
 | Store i64               | store_i64  | dstAddressRg | srcValueRg | dstOffsetRg | 0x0000000F |
 | Store f32               | store_f32  | dstAddressRg | srcValueRg | dstOffsetRg | 0x00000010 |
 | Store f64               | store_f64  | dstAddressRg | srcValueRg | dstOffsetRg | 0x00000011 |
-| Get Static Address      | s_addr     | dstFatPtrRg | sizeRg | offsetRg   | 0x00000012 |
-| Allocate                | alloc      | dstFatPtrRg | sizeRg | alignmentRg   | 0x00000013 |
+| Static Allocate         | salloc     | dstPtrRg | dataID | _             | 0x00000012 |
+| Allocate                | alloc      | dstPtrRg | sizeRg | alignmentRg   | 0x00000013 |
 | Free                    | free       | ptrRg | _ | _  | 0x00000014 |
-| Memory Copy             | memcpy     | dstRg | srcAddressRg | offsetRg   | 0x00000015 |
+| Memory Copy             | memcpy     | dstAddressRg | srcAddressRg | offsetRg   | 0x00000015 |
 | Subdivide Memory        | submem     | dstRg | srcAddressRg | offsetRg   | 0x00000016 |
 | Call Function           | call       | funcID | firstRg | -      | 0x00000017 |
 | Call Capability Func    | call_cap   | capID | funcID | firstRg  | 0x00000018 |

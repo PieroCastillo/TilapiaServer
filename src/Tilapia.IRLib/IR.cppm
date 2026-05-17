@@ -43,6 +43,13 @@ export namespace Tilapia::IRLib
         span = 0x0300,
     };
 
+    enum class coreStaticAllocLocation : uint16_t 
+    {
+        readonly = 0x0001,
+        readwrite = 0x0002,
+        uninitialized = 0x0003,
+    };
+
     enum class coreOpcodes : uint32_t
     {
         // CONTROL : 0x0000
@@ -64,7 +71,7 @@ export namespace Tilapia::IRLib
         store_i64 = 0x0000000F,
         store_f32 = 0x00000010,
         store_f64 = 0x00000011,
-        s_addr = 0x00000012,
+        salloc = 0x00000012,
         alloc = 0x00000013,
         free = 0x00000014,
         memcpy = 0x00000015,

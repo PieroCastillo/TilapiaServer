@@ -28,8 +28,8 @@ export namespace Tilapia::Runtime
         {
         case coreCalls::print_str:
         {
-            auto [size, offset] = unpackFatPtr(es.valueStack[firstRg]); // Rg contains a fatPtr
-            std::string_view text(reinterpret_cast<const char*>(&es.memoryArena[offset]), size);
+            auto [ptr, size] = ResolveFatptr(&es, firstRg); // Rg contains a fatPtr
+            std::string_view text(reinterpret_cast<const char*>(ptr), size);
             std::print("{}", text);
             break;
         }

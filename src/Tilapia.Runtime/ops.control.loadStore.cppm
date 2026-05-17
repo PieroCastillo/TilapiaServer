@@ -14,215 +14,141 @@ using namespace Tilapia::IRLib;
 
 export namespace Tilapia::Runtime
 {
-    ForceInline void execute_load_u8(Instance& es, const instruction& inst)
+    inline auto loadGetPtr(Instance& es, const instruction& inst) -> uint8_t*
     {
         uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
         uint32_t valOffset = es.valueStack[es.bp + inst.op3];
+        uint32_t memIdx = fatPtr << 32;
+        uint32_t memGen = fatPtr & 0xFFFFFF;
 
-        if (memSize < sizeof(uint8_t) || valOffset > memSize - sizeof(uint8_t)) [[unlikely]]
+        if (es.viewsGenerations[memIdx] != memGen) [[unlikely]]
         {
-            handleOutOfBounds();
-            return;
+            handleUseAfterFree();
+            return nullptr;
         }
 
-        uint8_t val;
-        memcpy(&val, &es.memoryArena[memOffset + valOffset], sizeof(uint8_t));
-        es.valueStack[es.bp + inst.op1] = val;
+        auto& vw = es.views[memIdx];
+        if (vw.size < sizeof(uint8_t) || valOffset > vw.size - sizeof(uint8_t)) [[unlikely]]
+        {
+            handleOutOfBounds();
+            return nullptr;
+        }
+
+        return vw.cachedPtr;
+    }
+
+    inline auto storeGetPtr(Instance& es, const instruction& inst) -> uint8_t*
+    {
+        uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
+        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
+        uint32_t memIdx = fatPtr << 32;
+        uint32_t memGen = fatPtr & 0xFFFFFF;
+
+        if (es.viewsGenerations[memIdx] != memGen) [[unlikely]]
+        {
+            handleUseAfterFree();
+            return nullptr;
+        }
+
+        auto& vw = es.views[memIdx];
+        if (vw.size < sizeof(uint8_t) || valOffset > vw.size - sizeof(uint8_t)) [[unlikely]]
+        {
+            handleOutOfBounds();
+            return nullptr;
+        }
+
+        return vw.cachedPtr;
+    }
+
+    ForceInline void execute_load_u8(Instance& es, const instruction& inst)
+    {
+        auto ptr = loadGetPtr(es, inst);
+        memcpy(&es.valueStack[es.bp + inst.op1], ptr, sizeof(uint8_t));
     }
 
     ForceInline void execute_load_i16(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(uint16_t) || valOffset > memSize - sizeof(uint16_t)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
-
-        uint16_t val;
-        memcpy(&val, &es.memoryArena[memOffset + valOffset], sizeof(uint16_t));
-        es.valueStack[es.bp + inst.op1] = val;
+        auto ptr = loadGetPtr(es, inst);
+        memcpy(&es.valueStack[es.bp + inst.op1], ptr, sizeof(uint16_t));
     }
 
     ForceInline void execute_load_i32(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(uint32_t) || valOffset > memSize - sizeof(uint32_t)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
-
-        uint32_t val;
-        std::memcpy(&val, &es.memoryArena[memOffset + valOffset], sizeof(uint32_t));
-        es.valueStack[es.bp + inst.op1] = val;
+        auto ptr = loadGetPtr(es, inst);
+        memcpy(&es.valueStack[es.bp + inst.op1], ptr, sizeof(uint32_t));
     }
 
     ForceInline void execute_load_i64(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(uint64_t) || valOffset > memSize - sizeof(uint64_t)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
-
-        uint64_t val;
-        std::memcpy(&val, &es.memoryArena[memOffset + valOffset], sizeof(uint64_t));
-        es.valueStack[es.bp + inst.op1] = val;
+        auto ptr = loadGetPtr(es, inst);
+        memcpy(&es.valueStack[es.bp + inst.op1], ptr, sizeof(uint64_t));
     }
 
     ForceInline void execute_load_f32(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(float) || valOffset > memSize - sizeof(float)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
+        auto ptr = loadGetPtr(es, inst);
 
         float val;
-        std::memcpy(&val, &es.memoryArena[memOffset + valOffset], sizeof(float));
+        memcpy(&val, ptr, sizeof(float));
         es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(static_cast<double>(val));
     }
 
     ForceInline void execute_load_f64(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op2];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(double) || valOffset > memSize - sizeof(double)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
+        auto ptr = loadGetPtr(es, inst);
 
         double val;
-        std::memcpy(&val, &es.memoryArena[memOffset + valOffset], sizeof(double));
+        memcpy(&val, ptr, sizeof(double));
         es.valueStack[es.bp + inst.op1] = std::bit_cast<uint64_t>(val);
     }
 
     ForceInline void execute_store_u8(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(uint8_t) || valOffset > memSize - sizeof(uint8_t)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
+        auto ptr = storeGetPtr(es, inst);
 
         uint8_t val = static_cast<uint8_t>(es.valueStack[es.bp + inst.op2]);
-        std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(uint8_t));
+        memcpy(ptr, &val, sizeof(uint8_t));
     }
 
     ForceInline void execute_store_i16(Instance& es, const instruction& inst)
-    {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(uint16_t) || valOffset > memSize - sizeof(uint16_t)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
+    {   
+        auto ptr = storeGetPtr(es, inst);
 
         uint16_t val = static_cast<uint16_t>(es.valueStack[es.bp + inst.op2]);
-        std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(uint16_t));
+        memcpy(ptr, &val, sizeof(uint16_t));
     }
 
     ForceInline void execute_store_i32(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(uint32_t) || valOffset > memSize - sizeof(uint32_t)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
+        auto ptr = storeGetPtr(es, inst);
 
         uint32_t val = static_cast<uint32_t>(es.valueStack[es.bp + inst.op2]);
-        std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(uint32_t));
+        memcpy(ptr, &val, sizeof(uint32_t));
     }
 
     ForceInline void execute_store_i64(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(uint64_t) || valOffset > memSize - sizeof(uint64_t)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
+        auto ptr = storeGetPtr(es, inst);
 
         uint64_t val = es.valueStack[es.bp + inst.op2];
-        std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(uint64_t));
+        memcpy(ptr, &val, sizeof(uint64_t));
     }
 
     ForceInline void execute_store_f32(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(float) || valOffset > memSize - sizeof(float)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
+        auto ptr = storeGetPtr(es, inst);
 
         double doubleVal = std::bit_cast<double>(es.valueStack[es.bp + inst.op2]);
         float val = static_cast<float>(doubleVal);
 
-        std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(float));
+        memcpy(ptr, &val, sizeof(float));
     }
 
     ForceInline void execute_store_f64(Instance& es, const instruction& inst)
     {
-        uint64_t fatPtr = es.valueStack[es.bp + inst.op1];
-        uint32_t memSize = fatPtr >> 32;
-        uint32_t memOffset = fatPtr & 0xFFFFFFFF;
-        uint32_t valOffset = es.valueStack[es.bp + inst.op3];
-
-        if (memSize < sizeof(double) || valOffset > memSize - sizeof(double)) [[unlikely]]
-        {
-            handleOutOfBounds();
-            return;
-        }
-
+        auto ptr = storeGetPtr(es, inst);
+     
         uint64_t val = es.valueStack[es.bp + inst.op2];
-        std::memcpy(&es.memoryArena[memOffset + valOffset], &val, sizeof(double));
+        memcpy(ptr, &val, sizeof(double));
     }
 }
