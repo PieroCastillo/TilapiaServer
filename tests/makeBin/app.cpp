@@ -44,7 +44,7 @@ int main(int argc, char** argv)
     bin.readOnlyDataSize = (uint32_t)bin.readOnlyDataPool.size();
 
     uint32_t rg0 = 0;
-    bin.instructions.push_back({ (uint32_t)coreOpcodes::li64, rg0, (uint32_t)helloWorldStr.size(), 0 }); // hi: size, lo: offset
+    bin.instructions.push_back({ (uint32_t)coreOpcodes::alloc_ro, 0 }); // dataID : 0
     bin.instructions.push_back({ (uint32_t)coreOpcodes::call_cap, (uint32_t)coreCaps::print, (uint32_t)coreCalls::print_str, rg0 });
     bin.instructions.push_back({ (uint32_t)coreOpcodes::ret });
 

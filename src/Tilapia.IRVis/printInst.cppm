@@ -68,27 +68,7 @@ export void printInstruction(const Tilapia::IRLib::instruction& inst, size_t pc)
     case coreOpcodes::store_f64:
         std::println("[{}], {}", reg(inst.op1), reg(inst.op2));
         break;
-
-    case coreOpcodes::s_addr:
-        std::println("{}, &{}", reg(inst.op1), reg(inst.op2));
-        break;
-
-    case coreOpcodes::alloc:
-        std::println("{}, size={}, align={}", reg(inst.op1), imm_u32(inst.op2), imm_u32(inst.op3));
-        break;
-
-    case coreOpcodes::free:
-        std::println("{}", reg(inst.op1));
-        break;
-
-    case coreOpcodes::memcpy:
-        std::println("dst={}, src={}, bytes={}", reg(inst.op1), reg(inst.op2), imm_u32(inst.op3));
-        break;
-
-    case coreOpcodes::submem:
-        std::println("{}, {}, offset={}", reg(inst.op1), reg(inst.op2), imm_u32(inst.op3));
-        break;
-
+        
     case coreOpcodes::call:
         std::println("fn={}, arg={}", inst.op1, reg(inst.op2));
         break;
@@ -121,6 +101,57 @@ export void printInstruction(const Tilapia::IRLib::instruction& inst, size_t pc)
 
     case coreOpcodes::br_table:
         std::println("index={}, table={}", reg(inst.op1), imm_u32(inst.op2));
+        break;
+
+    case coreOpcodes::alloc_bs:
+        std::println("{}, offset={}, size={}",
+            reg(inst.op1),
+            imm_u32(inst.op2),
+            imm_u32(inst.op3));
+        break;
+
+    case coreOpcodes::alloc_ro:
+        std::println("{}, data={}",
+            reg(inst.op1),
+            imm_u32(inst.op2));
+        break;
+
+    case coreOpcodes::alloc_rw:
+        std::println("{}, data={}",
+            reg(inst.op1),
+            imm_u32(inst.op2));
+        break;
+
+    case coreOpcodes::alloc_hp:
+        std::println("{}, size={}, align={}",
+            reg(inst.op1),
+            reg(inst.op2),
+            reg(inst.op3));
+        break;
+
+    case coreOpcodes::free:
+        std::println("{}", reg(inst.op1));
+        break;
+
+    case coreOpcodes::memcpy:
+        std::println("dst={}, src={}, size={}",
+            reg(inst.op1),
+            reg(inst.op2),
+            reg(inst.op3));
+        break;
+
+    case coreOpcodes::memset:
+        std::println("dst={}, value={}, count={}",
+            reg(inst.op1),
+            reg(inst.op2),
+            reg(inst.op3));
+        break;
+
+    case coreOpcodes::memmove:
+        std::println("dst={}, src={}, size={}",
+            reg(inst.op1),
+            reg(inst.op2),
+            reg(inst.op3));
         break;
 
     case coreOpcodes::add_i:

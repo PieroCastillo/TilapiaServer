@@ -94,19 +94,25 @@ int main(int argc, char** argv) {
         case coreOpcodes::store_i64: execute_store_i64(es, inst); break;
         case coreOpcodes::store_f32: execute_store_f32(es, inst); break;
         case coreOpcodes::store_f64: execute_store_f64(es, inst); break;
-        case coreOpcodes::salloc: execute_salloc(es, inst); break;
-        case coreOpcodes::alloc: execute_alloc(es, inst); break;
-        case coreOpcodes::free: execute_free(es, inst); break;
-        case coreOpcodes::memcpy: execute_memcpy(es, inst); break;
-        case coreOpcodes::submem: execute_submem(es, inst); break;
+
         case coreOpcodes::call: execute_call(es, inst); break;
         case coreOpcodes::call_cap: execute_call_cap(es, inst); break;
         case coreOpcodes::call_lib: execute_call_lib(es, inst); break;
         case coreOpcodes::ret: execute_ret(es, inst); break;
         case coreOpcodes::jmp: execute_jmp(es, inst); break;
+        
         case coreOpcodes::br_true: execute_br_true(es, inst); break;
         case coreOpcodes::br_false: execute_br_false(es, inst); break;
         case coreOpcodes::br_table: execute_br_table(es, inst); break;
+
+        case coreOpcodes::alloc_bs: execute_alloc_bs(es, inst); break;
+        case coreOpcodes::alloc_ro: execute_alloc_ro(es, inst); break;
+        case coreOpcodes::alloc_rw: execute_alloc_rw(es, inst); break;
+        case coreOpcodes::alloc_hp: execute_alloc_hp(es, inst); break;
+        case coreOpcodes::free: execute_free(es, inst); break;
+        case coreOpcodes::memcpy: execute_memcpy(es, inst); break;
+        case coreOpcodes::memset: execute_memset(es, inst); break;
+        case coreOpcodes::memmove: execute_memmove(es, inst); break;
 
         case coreOpcodes::add_i: execute_add_i(es, inst); break;
         case coreOpcodes::sub_i: execute_sub_i(es, inst); break;

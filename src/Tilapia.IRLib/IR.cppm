@@ -71,19 +71,22 @@ export namespace Tilapia::IRLib
         store_i64 = 0x0000000F,
         store_f32 = 0x00000010,
         store_f64 = 0x00000011,
-        salloc = 0x00000012,
-        alloc = 0x00000013,
-        free = 0x00000014,
-        memcpy = 0x00000015,
-        submem = 0x00000016,
-        call = 0x00000017,
-        call_cap = 0x00000018,
-        call_lib = 0x00000019,
-        ret = 0x0000001A,
-        jmp = 0x0000001B,
-        br_true = 0x0000001C,
-        br_false = 0x0000001D,
-        br_table = 0x0000001E,
+        call      = 0x00000012,
+        call_cap  = 0x00000013,
+        call_lib  = 0x00000014,
+        ret       = 0x00000015,
+        jmp       = 0x00000016,
+        br_true   = 0x00000017,
+        br_false  = 0x00000018,
+        br_table  = 0x00000019,
+        alloc_bs  = 0x0000001A,
+        alloc_ro  = 0x0000001B,
+        alloc_rw  = 0x0000001C,
+        alloc_hp  = 0x0000001D,
+        free      = 0x0000001E,
+        memcpy    = 0x0000001F,
+        memset    = 0x00000020,
+        memmove   = 0x00000021,
 
         // ALU INT : 0x0001
         add_i = 0x00010001,
@@ -301,7 +304,7 @@ export namespace Tilapia::IRLib
     struct dataEntry
     {
         uint32_t size;
-        uint8_t dataOffset;
+        uint32_t dataOffset;
         uint32_t alignment;
     };
 

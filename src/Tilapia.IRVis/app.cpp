@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     auto binDescRes = loadDesc(asmBytes);
     if (!binDescRes)
     {
-        std::print("File Description Error");
+        std::println("File Description Error");
         return -1;
     }
     auto binDesc = binDescRes.value();

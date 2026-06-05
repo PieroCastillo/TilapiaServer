@@ -136,11 +136,6 @@ export namespace Tilapia::IRLib
         case coreOpcodes::store_i32: return "store_i32";
         case coreOpcodes::store_i64: return "store_i64";
 
-        case coreOpcodes::alloc: return "alloc";
-        case coreOpcodes::free: return "free";
-        case coreOpcodes::memcpy: return "memcpy";
-        case coreOpcodes::submem: return "submem";
-
         case coreOpcodes::call: return "call";
         case coreOpcodes::call_cap: return "call_cap";
         case coreOpcodes::call_lib: return "call_lib";
@@ -150,6 +145,15 @@ export namespace Tilapia::IRLib
         case coreOpcodes::br_true: return "br_true";
         case coreOpcodes::br_false: return "br_false";
         case coreOpcodes::br_table: return "br_table";
+
+        case coreOpcodes::alloc_bs: return "alloc_bs";
+        case coreOpcodes::alloc_ro: return "alloc_ro";
+        case coreOpcodes::alloc_rw: return "alloc_rw";
+        case coreOpcodes::alloc_hp: return "alloc_hp";
+        case coreOpcodes::free: return "free";
+        case coreOpcodes::memcpy: return "memcpy";
+        case coreOpcodes::memset: return "memset";
+        case coreOpcodes::memmove: return "memmove";
 
         case coreOpcodes::add_i: return "add_i";
         case coreOpcodes::sub_i: return "sub_i";

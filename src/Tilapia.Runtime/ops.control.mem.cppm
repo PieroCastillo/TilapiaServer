@@ -9,16 +9,33 @@ using namespace Tilapia::IRLib;
 
 export namespace Tilapia::Runtime
 {
-    ForceInline void execute_salloc(Instance& es, const instruction& inst)
+    ForceInline void execute_alloc_bs(Instance& es, const instruction& inst)
     {
-        auto dataId = es.valueStack[inst.op2];
-        auto dataSrc = es.valueStack[inst.op3];
-        
 
-        auto valRg = es.valueStack[inst.op1];
     }
 
-    ForceInline void execute_alloc(Instance& es, const instruction& inst)
+    ForceInline void execute_alloc_ro(Instance& es, const instruction& inst)
+    {
+        // input
+        auto dstRg = inst.op1;
+        auto dataIdx = inst.op2;
+
+        auto dataEntry = es.roData[dataIdx];
+        auto dataPtr = &es.roStorage[dataEntry.dataOffset];
+
+        // alloc handle
+        auto memVw = MemoryView{ dataPtr, dataEntry.size, MemFlag_Read, MemValue_syncDataIdx_NO_SYNC, dataEntry.dataOffset, 0 };
+    
+        // output
+        es.valueStack[es.bp + inst.op1] = AllocFatptr(&es, memVw);
+    }
+
+    ForceInline void execute_alloc_rw(Instance& es, const instruction& inst)
+    {
+
+    }
+
+    ForceInline void execute_alloc_hp(Instance& es, const instruction& inst)
     {
 
     }
@@ -33,7 +50,12 @@ export namespace Tilapia::Runtime
 
     }
 
-    ForceInline void execute_submem(Instance& es, const instruction& inst)
+    ForceInline void execute_memset(Instance& es, const instruction& inst)
+    {
+
+    }
+
+    ForceInline void execute_memmove(Instance& es, const instruction& inst)
     {
 
     }

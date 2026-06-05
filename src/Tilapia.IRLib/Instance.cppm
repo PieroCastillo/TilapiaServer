@@ -2,6 +2,7 @@ module;
 
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
 #include <unordered_map>
 #include <vector>
 
@@ -16,6 +17,7 @@ export namespace Tilapia::IRLib
     constexpr uint32_t MemFlag_File = 0x4;
     constexpr uint32_t MemFlag_ThreadShared = 0x8;
     constexpr uint32_t MemFlag_InternalSynchronized = 0x10;
+    constexpr uint32_t MemValue_syncDataIdx_NO_SYNC = (std::numeric_limits<uint32_t>::max)();
 
     struct SyncData
     {
@@ -65,7 +67,6 @@ export namespace Tilapia::IRLib
     {
         std::vector<uint64_t> valueStack;
         std::vector<CallFrame> callStack;
-        std::vector<MemoryRegion> memoryRegions;
 
         std::vector<MemoryRegion> regions;
 
@@ -81,6 +82,9 @@ export namespace Tilapia::IRLib
         std::vector<uint8_t> bssStorage;
         std::vector<uint8_t> heapStorage;
 
+        std::vector<dataEntry> roData;
+        std::vector<dataEntry> rwData;
+
         uint32_t rwOffset, bssOffset, heapOffset;
         uint32_t roSize, rwSize, bssSize, heapSize;
         uint32_t arenaOffset = 0;
@@ -93,28 +97,15 @@ export namespace Tilapia::IRLib
         int32_t exitCode = 0;
     };
 
-    inline auto ResolveFatptr(Instance* es, uint32_t rg) -> std::tuple<uint8_t*, uint32_t>
-    {
-        uint64_t fatPtr = es->valueStack[rg];
-        uint32_t memIdx = fatPtr << 32;
-        uint32_t memGen = fatPtr & 0xFFFFFF;
-
-        if (es->viewsGenerations[memIdx] != memGen) [[unlikely]]
-            return { nullptr,0 };
-
-        auto& vw = es->views[memIdx];
-        if (vw.size < sizeof(uint8_t)) [[unlikely]]
-            return { nullptr,0 };
-
-        return { vw.cachedPtr, vw.size };
-    }
-
     void ConfigureInstance(binary* exe, Instance* instance, uint32_t arenaSize)
     {
         constexpr uint32_t align = 64;
         instance->ip = exe->header.entrypointOffset;
         instance->valueStack.resize(8192); // 8192 variables
         instance->callStack.reserve(1024); // depth limit
+
+        instance->roData = exe->readOnlyData;
+        instance->rwData = exe->readWriteData;
 
         instance->roStorage.resize(alignUp(exe->readOnlyDataSize, align));
         instance->rwStorage.resize(alignUp(exe->readWriteDataSize, align));
@@ -134,5 +125,59 @@ export namespace Tilapia::IRLib
         // copy
         memcpy(instance->roStorage.data(), exe->readOnlyDataPool.data(), exe->readOnlyDataPool.size());
         memcpy(instance->rwStorage.data(), exe->readWriteDataPool.data(), exe->readWriteDataPool.size());
+    }
+
+    inline auto ResolveFatptr(Instance* es, uint32_t rg) -> std::tuple<uint8_t*, uint32_t>
+    {
+        uint64_t fatPtr = es->valueStack[rg];
+        uint32_t memIdx = fatPtr << 32;
+        uint32_t memGen = fatPtr & 0xFFFFFF;
+
+        if (es->viewsGenerations[memIdx] != memGen) [[unlikely]]
+            return { nullptr, 0 };
+
+        auto& vw = es->views[memIdx];
+        if (vw.size < sizeof(uint8_t)) [[unlikely]]
+            return { nullptr, 0 };
+
+        return { vw.cachedPtr, vw.size };
+    }
+
+    inline auto AllocFatptr(Instance* instance, const MemoryView& view) -> uint64_t
+    {
+        uint32_t index;
+
+        if (!instance->viewsFreeIndexList.empty())
+        {
+            index = instance->viewsFreeIndexList.back();
+            instance->viewsFreeIndexList.pop_back();
+
+            instance->views[index] = view;
+        }
+        else
+        {
+            index = static_cast<uint32_t>(instance->views.size());
+
+            instance->views.push_back(view);
+            instance->viewsGenerations.push_back(0);
+        }
+
+        uint64_t fatPtr = ((uint64_t)index << 32) | (uint64_t)instance->viewsGenerations[index];
+        return fatPtr;
+    }
+
+    inline void FreeFatptr(Instance* instance, uint64_t fatPtr)
+    {
+        uint32_t memIdx = fatPtr << 32;
+        uint32_t memGen = fatPtr & 0xFFFFFF;
+
+        if (memIdx >= instance->views.size())
+            return;
+
+        if (instance->viewsGenerations[memIdx] != memGen)
+            return;
+
+        ++instance->viewsGenerations[memIdx];
+        instance->viewsFreeIndexList.push_back(memIdx);
     }
 };
