@@ -44,7 +44,7 @@ int main(int argc, char** argv)
     Tilapia::Platform::InitSocketsAPI();
     serverSocket = Tilapia::Platform::ConfigureServer(Tilapia::Platform::BuildSocketPath(daemonSocketName), 10);
 
-    if (!IsValid(serverSocket))
+    if (!Tilapia::Platform::IsValid(serverSocket))
     {
         std::println("bad config");
         return 0;
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     while (true)
     {
         auto clientSck = Tilapia::Platform::Accept(serverSocket);
-        if(!IsValid(clientSck))
+        if(!Tilapia::Platform::IsValid(clientSck))
         {
             continue;
         }
