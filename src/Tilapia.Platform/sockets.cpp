@@ -87,7 +87,8 @@ namespace Tilapia::Platform
 
     auto Accept(Socket server) -> Socket
     {
-        return -1;
+        int clientFd = accept(server, nullptr, nullptr);
+        return clientFd;
     }
 
     auto Connect(const std::string& path) -> Socket
@@ -111,13 +112,17 @@ namespace Tilapia::Platform
         return sock_fd;
     }
 
-    void Recv(Socket socket, std::span<uint8_t> data)
+    void Recv(Socket socket, std::span<uint8_t> data, bool waitAll)
     {
-        // #ifdef _WIN32
-        //         recv(socket, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), MSG_WAITALL);
-        // #else
-        //         recv(socket, data.data(), data.size(), MSG_WAITALL);
-        // #endif
+        if(waitAll)
+        {
+        #ifdef _WIN32
+                recv(socket, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), MSG_WAITALL);
+        #else
+                recv(socket, data.data(), data.size(), MSG_WAITALL);
+        #endif
+            return;
+        }
         uint32_t received = 0;
 
         while (received < data.size())

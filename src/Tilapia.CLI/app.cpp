@@ -18,15 +18,18 @@ int main(int argc, char** argv)
     Tilapia::Platform::InitSocketsAPI();
     clientSocket = Tilapia::Platform::Connect(Tilapia::Platform::BuildSocketPath(daemonSocketName));
 
-    // while(true)
-    // {
+    while(true)
+    {
     std::string input;
     std::getline(std::cin, input);
 
-    auto payloadSize = input.size();
-    Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(&payloadSize), sizeof(payloadSize)));
-    Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(input.data()), payloadSize));
-    // }
+    uint32_t value = 20;
+    Tilapia::Platform::Send(clientSocket, &value, 1);
+
+    // auto payloadSize = input.size();
+    // Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(&payloadSize), sizeof(payloadSize)));
+    // Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(input.data()), payloadSize));
+    }
 
     Tilapia::Platform::Close(clientSocket);
     Tilapia::Platform::CleanupSocketsAPI();

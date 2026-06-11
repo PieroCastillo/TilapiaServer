@@ -27,8 +27,20 @@ export namespace Tilapia::Platform
 
     auto Connect(const std::string& path) -> Socket;
 
-    void Recv(Socket socket, std::span<uint8_t> data);
+    void Recv(Socket socket, std::span<uint8_t> data, bool waitAll = true);
     void Send(Socket socket, std::span<const uint8_t> data);
+    template<typename T>
+    void Recv(Socket socket, T* ptr, uint32_t count, bool waitAll = true)
+    {
+        auto conv = std::span(reinterpret_cast<uint8_t*>(ptr), sizeof(T) * count);
+        Recv(socket, conv, waitAll);
+    }
+    template<typename T>
+    void Send(Socket socket, T* ptr, uint32_t count)
+    {
+        auto conv = std::span(reinterpret_cast<uint8_t*>(ptr), sizeof(T) * count);
+        Send(socket, conv);
+    }
 
     auto BuildSocketPath(const std::string& path) -> std::string;
     void Poll(std::span<const Socket> sockets, std::chrono::milliseconds timeout, std::move_only_function<void(Socket)> callback);

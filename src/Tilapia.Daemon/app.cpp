@@ -49,25 +49,27 @@ int main(int argc, char** argv)
         std::println("bad config");
         return 0;
     }
-
+    auto clientSck = Tilapia::Platform::Accept(serverSocket);
+    if (!Tilapia::Platform::IsValid(clientSck))
+    {
+        return 0;
+    }
     while (true)
     {
-        auto clientSck = Tilapia::Platform::Accept(serverSocket);
-        if(!Tilapia::Platform::IsValid(clientSck))
-        {
-            continue;
-        }
+
 
         // process events
-        uint32_t strSize = 0;
-        Tilapia::Platform::Recv(clientSck, std::span(reinterpret_cast<uint8_t*>(&strSize), sizeof(strSize)));
+        // uint32_t strSize = 0;
+        // Tilapia::Platform::Recv(clientSck, std::span(reinterpret_cast<uint8_t*>(&strSize), sizeof(strSize)));
+        uint32_t value;
+        Tilapia::Platform::Recv<uint32_t>(clientSck, &value, 1, true);
+        std::println("value: {}", value);
+        //     std::string strBuffer;
+        //     strBuffer.resize(strSize);
+        //     Tilapia::Platform::Recv(clientSck, std::span(reinterpret_cast<uint8_t*>(strBuffer.data()), strSize));
 
-        std::string strBuffer;
-        strBuffer.resize(strSize);
-        Tilapia::Platform::Recv(clientSck, std::span(reinterpret_cast<uint8_t*>(strBuffer.data()), strSize));
+        //     std::println("recv: {} bytes, msg: {}", strSize, strBuffer);
     }
-
-    std::println("recv: {} bytes, msg: {}", strSize, strBuffer);
 
     //     if(strBuffer == "hola")
     //     {
