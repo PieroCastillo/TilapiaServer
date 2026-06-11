@@ -4,23 +4,9 @@ import std;
 import tilapia.daemon.udpserver;
 import tilapia.platform;
 
-/*
-base:
-UDP
-QUIC
-HTTP/3
-WebTransportv
-compatibility:
-TLS 1.3
-HTTP/2
-WebSockets
-SSE
-gRPC
-run daemon
-*/
-
 const std::string daemonSocketName = "tilapia_daemon.sock";
 Tilapia::Platform::Socket serverSocket;
+
 
 std::unique_ptr<Tilapia::Daemon::UdpServer> server;
 
@@ -41,6 +27,7 @@ int main(int argc, char** argv)
         return 0;
     }
 
+    // init sockets for IPC
     Tilapia::Platform::InitSocketsAPI();
     serverSocket = Tilapia::Platform::ConfigureServer(Tilapia::Platform::BuildSocketPath(daemonSocketName), 10);
 
@@ -49,33 +36,37 @@ int main(int argc, char** argv)
         std::println("bad config");
         return 0;
     }
+
     auto clientSck = Tilapia::Platform::Accept(serverSocket);
     if (!Tilapia::Platform::IsValid(clientSck))
     {
         return 0;
     }
+
+    // control loop
     while (true)
     {
+/*      for(client in incomming clients)
+        {
+            auto client = accept(serverSocket);
+            clients.add(client);
+        }
 
+        for( client in sendingClientsOnly(clients))
+        {
+            auto msg = recv(client);
+            // do
+        }
 
-        // process events
-        // uint32_t strSize = 0;
-        // Tilapia::Platform::Recv(clientSck, std::span(reinterpret_cast<uint8_t*>(&strSize), sizeof(strSize)));
-        uint32_t value;
-        Tilapia::Platform::Recv<uint32_t>(clientSck, &value, 1, true);
-        std::println("value: {}", value);
-        //     std::string strBuffer;
-        //     strBuffer.resize(strSize);
-        //     Tilapia::Platform::Recv(clientSck, std::span(reinterpret_cast<uint8_t*>(strBuffer.data()), strSize));
-
-        //     std::println("recv: {} bytes, msg: {}", strSize, strBuffer);
+        for( rtClient in sendingClientsOnly(runtimeClients))
+        {
+            auto msg = recv(rtClient);
+        }
+*/  
+        // uint32_t value;
+        // Tilapia::Platform::Recv<uint32_t>(clientSck, &value, 1, true);
+        // std::println("value: {}", value);
     }
-
-    //     if(strBuffer == "hola")
-    //     {
-    //         break;
-    //     }
-    // }
 
     Tilapia::Platform::Close(serverSocket);
     Tilapia::Platform::CleanupSocketsAPI();

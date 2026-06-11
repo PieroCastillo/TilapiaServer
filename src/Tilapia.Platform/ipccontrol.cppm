@@ -43,12 +43,15 @@ export namespace Tilapia::Platform::IPCControl
     */
     enum class Action
     {
-        RequestFile,
-        RequestPort
+        OpenFile,
+        OpenPort,
+        ReadKeyboard,
+        Print,
     };
 
     struct ControlMessage
     {
-
+        Action action;
+        
     };
 }
