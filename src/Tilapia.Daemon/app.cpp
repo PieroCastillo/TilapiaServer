@@ -7,6 +7,12 @@ import tilapia.platform;
 const std::string daemonSocketName = "tilapia_daemon.sock";
 Tilapia::Platform::Socket serverSocket;
 
+struct CLICollection
+{
+    std::vector<Tilapia::Platform::Socket> cliSockets;
+    std::vector<uint32_t> generations;
+    std::vector<uint32_t> freeList;
+};
 
 std::unique_ptr<Tilapia::Daemon::UdpServer> server;
 
@@ -46,6 +52,7 @@ int main(int argc, char** argv)
     // control loop
     while (true)
     {
+        // Tilapia::Platform::Poll()
 /*      for(client in incomming clients)
         {
             auto client = accept(serverSocket);
