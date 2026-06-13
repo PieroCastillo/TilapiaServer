@@ -5,27 +5,15 @@ import tilapia.daemon.udpserver;
 import tilapia.platform;
 
 const std::string daemonSocketName = "tilapia_daemon.sock";
+
 Tilapia::Platform::Socket serverSocket;
-
-struct CLICollection
-{
-    std::vector<Tilapia::Platform::Socket> cliSockets;
-    std::vector<uint32_t> generations;
-    std::vector<uint32_t> freeList;
-};
-
-std::unique_ptr<Tilapia::Daemon::UdpServer> server;
+std::vector<Tilapia::Platform::Socket> cliSockets;
+std::vector<Tilapia::Platform::Socket> runtimeSockets;
 
 int main(int argc, char** argv)
 {
     auto args = std::vector<std::string>(argv, argv + argc);
-    // NOW, WINDOWS ONLY (next step, imlp udp for win/linux)
     std::println("Tilapia Daemon v0.1");
-    // print args
-    std::println("args:");
-    for (const auto& arg : args)
-        std::print("  > {} ", arg);
-    std::println();
 
     if (!Tilapia::Platform::EnsureSingle())
     {
@@ -43,36 +31,40 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    auto clientSck = Tilapia::Platform::Accept(serverSocket);
-    if (!Tilapia::Platform::IsValid(clientSck))
-    {
-        return 0;
-    }
-
     // control loop
     while (true)
     {
-        // Tilapia::Platform::Poll()
-/*      for(client in incomming clients)
-        {
-            auto client = accept(serverSocket);
-            clients.add(client);
-        }
+        Tilapia::Platform::PollIn(
+            std::span(&serverSocket, 1),
+            std::chrono::milliseconds(2),
+            [&](Tilapia::Platform::Socket sck) {
+                auto clientSck = Tilapia::Platform::Accept(sck);
+                if (!Tilapia::Platform::IsValid(clientSck))
+                {
+                    return;
+                }
+                cliSockets.push_back(sck);
+                std::println("CLI client accepted!");
+            });
 
-        for( client in sendingClientsOnly(clients))
-        {
-            auto msg = recv(client);
-            // do
-        }
+        Tilapia::Platform::PollIn(
+            cliSockets,
+            std::chrono::milliseconds(2),
+            [&](Tilapia::Platform::Socket sck) {
+                uint32_t msg;
+                Tilapia::Platform::Recv(sck, &msg, 1);
+                std::println("value: {}", msg);
+            }
+        );
 
-        for( rtClient in sendingClientsOnly(runtimeClients))
-        {
-            auto msg = recv(rtClient);
-        }
-*/  
-        // uint32_t value;
-        // Tilapia::Platform::Recv<uint32_t>(clientSck, &value, 1, true);
-        // std::println("value: {}", value);
+        Tilapia::Platform::PollIn(
+            runtimeSockets,
+            std::chrono::milliseconds(2),
+            [&](Tilapia::Platform::Socket sck) {
+                uint32_t msg;
+                Tilapia::Platform::Recv(sck, &msg, 1);
+            }
+        );
     }
 
     Tilapia::Platform::Close(serverSocket);

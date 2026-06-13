@@ -21,21 +21,22 @@ export namespace Tilapia::Daemon
     {
     private:
         // access data
-        std::vector<Tilapia::Platform::Socket> runtimeClients;
+        std::vector<Tilapia::Platform::Socket> runtimeSockets;
         std::vector<uint32_t> generations;
         // resources
         std::vector<std::jthread> clientThreads;
-        std::vector<Tilapia::Platform::SharedMemory> sharedMemories;
+        std::vector<Tilapia::Platform::SharedMemory> writeMems;
+        std::vector<Tilapia::Platform::SharedMemory> readMems;
         std::vector<Tilapia::Platform::Process> runtimeIntances;
     public:
-        void SendControl(Client client, ControlMessage msg)
-        {
+        // void SendControl(Client client, ControlMessage msg)
+        // {
 
-        }
+        // }
 
-        void RecvControl(Client client, ControlMessage msg)
-        {
+        // void RecvControl(Client client, ControlMessage msg)
+        // {
 
-        }
+        // }
     };
 }

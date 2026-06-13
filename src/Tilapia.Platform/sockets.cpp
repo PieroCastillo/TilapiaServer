@@ -161,16 +161,18 @@ namespace Tilapia::Platform
 #endif
     }
 
-    void Poll(std::span<const Socket> sockets, std::chrono::milliseconds timeout, std::move_only_function<void(Socket)> callback) {
+    void PollIn(std::span<const Socket> sockets, std::chrono::milliseconds timeout, std::move_only_function<void(Socket)> callback) {
+        if(sockets.size() == 0)
+            return;
 #ifdef _WIN32
         auto* fds = (WSAPOLLFD*)alloca(sockets.size() * sizeof(WSAPOLLFD));
 
         for (size_t i = 0; i < sockets.size(); ++i)
-            fds[i] = { (SOCKET)sockets[i], POLLRDNORM, 0 };
+            fds[i] = { (SOCKET)sockets[i], POLLIN, 0 };
 
         if (WSAPoll(fds, (ULONG)sockets.size(), (INT)timeout.count()) > 0)
             for (size_t i = 0; i < sockets.size(); ++i)
-                if (fds[i].revents & POLLRDNORM) callback(sockets[i]);
+                if (fds[i].revents & POLLIN) callback(sockets[i]);
 #else
         auto* fds = (pollfd*)alloca(sockets.size() * sizeof(pollfd));
 

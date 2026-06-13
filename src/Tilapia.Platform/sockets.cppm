@@ -43,5 +43,5 @@ export namespace Tilapia::Platform
     }
 
     auto BuildSocketPath(const std::string& path) -> std::string;
-    void Poll(std::span<const Socket> sockets, std::chrono::milliseconds timeout, std::move_only_function<void(Socket)> callback);
+    void PollIn(std::span<const Socket> sockets, std::chrono::milliseconds timeout, std::move_only_function<void(Socket)> callback);
 }
