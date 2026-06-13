@@ -114,13 +114,13 @@ namespace Tilapia::Platform
 
     void Recv(Socket socket, std::span<uint8_t> data, bool waitAll)
     {
-        if(waitAll)
+        if (waitAll)
         {
-        #ifdef _WIN32
-                recv(socket, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), MSG_WAITALL);
-        #else
-                recv(socket, data.data(), data.size(), MSG_WAITALL);
-        #endif
+#ifdef _WIN32
+            recv(socket, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), MSG_WAITALL);
+#else
+            recv(socket, data.data(), data.size(), MSG_WAITALL);
+#endif
             return;
         }
         uint32_t received = 0;
@@ -146,7 +146,7 @@ namespace Tilapia::Platform
     void Send(Socket socket, std::span<const uint8_t> data)
     {
 #ifdef _WIN32
-        send(socket, reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size()), 0);
+        auto r = send(socket, reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size()), 0);
 #else
         send(socket, data.data(), data.size(), 0);
 #endif
@@ -162,7 +162,7 @@ namespace Tilapia::Platform
     }
 
     void PollIn(std::span<const Socket> sockets, std::chrono::milliseconds timeout, std::move_only_function<void(Socket)> callback) {
-        if(sockets.size() == 0)
+        if (sockets.size() == 0)
             return;
 #ifdef _WIN32
         auto* fds = (WSAPOLLFD*)alloca(sockets.size() * sizeof(WSAPOLLFD));
@@ -172,7 +172,7 @@ namespace Tilapia::Platform
 
         if (WSAPoll(fds, (ULONG)sockets.size(), (INT)timeout.count()) > 0)
             for (size_t i = 0; i < sockets.size(); ++i)
-                if (fds[i].revents & POLLIN) callback(sockets[i]);
+                if ((fds[i].revents & POLLRDNORM) > 0)                    callback(sockets[i]);
 #else
         auto* fds = (pollfd*)alloca(sockets.size() * sizeof(pollfd));
 

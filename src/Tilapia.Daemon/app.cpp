@@ -43,7 +43,7 @@ int main(int argc, char** argv)
                 {
                     return;
                 }
-                cliSockets.push_back(sck);
+                cliSockets.push_back(clientSck);
                 std::println("CLI client accepted!");
             });
 
@@ -51,9 +51,10 @@ int main(int argc, char** argv)
             cliSockets,
             std::chrono::milliseconds(2),
             [&](Tilapia::Platform::Socket sck) {
-                uint32_t msg;
-                Tilapia::Platform::Recv(sck, &msg, 1);
-                std::println("value: {}", msg);
+                uint32_t msgIn, msgOut = 30;
+                Tilapia::Platform::Recv(sck, &msgIn, 1, false);
+                Tilapia::Platform::Send(sck, &msgOut, 1);
+                std::println("value: {}", msgIn);
             }
         );
 
