@@ -1,4 +1,5 @@
 #include "common.hpp"
+#include "malloc.h"
 
 import std;
 import tilapia.daemon.udpserver;
@@ -51,10 +52,14 @@ int main(int argc, char** argv)
             cliSockets,
             std::chrono::milliseconds(2),
             [&](Tilapia::Platform::Socket sck) {
-                uint32_t msgIn, msgOut = 30;
-                Tilapia::Platform::Recv(sck, &msgIn, 1, false);
-                Tilapia::Platform::Send(sck, &msgOut, 1);
-                std::println("value: {}", msgIn);
+                uint32_t payloadSize;
+                Tilapia::Platform::Recv(sck, &payloadSize, 1, true);
+                auto payload = (char*)alloca(payloadSize);
+                std::println("payloadSize = {}", payloadSize);
+                Tilapia::Platform::Recv(sck, payload, payloadSize);
+                std::println("{}", std::string_view(payload, payloadSize));
+                // Tilapia::Platform::Send(sck, &msgOut, 1);
+                // std::println("value: {}", msgIn);
             }
         );
 

@@ -1,5 +1,5 @@
-#include <tuple>
 #include <span>
+#include <tuple>
 #include <vector>
 
 #ifdef _WIN32
@@ -114,14 +114,15 @@ namespace Tilapia::Platform
 
     void Recv(Socket socket, std::span<uint8_t> data, bool waitAll)
     {
-        if (waitAll)
+        if (!waitAll)
         {
 #ifdef _WIN32
-            recv(socket, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), MSG_WAITALL);
+            auto receivedSize = recv(socket, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), MSG_WAITALL);
 #else
-            recv(socket, data.data(), data.size(), MSG_WAITALL);
+            auto receivedSize = recv(socket, data.data(), data.size(), MSG_WAITALL);
 #endif
-            return;
+            if (receivedSize <= 0) [[unlikely]]
+                throw std::runtime_error("recv failed");
         }
         uint32_t received = 0;
 
@@ -132,12 +133,8 @@ namespace Tilapia::Platform
 #else
             ssize_t n = recv(socket, data.data() + received, data.size() - received, 0);
 #endif
-
-            if (n == 0)
-                return;
-
-            // if (n < 0)
-            //     throw std::runtime_error("recv failed");
+            if (n <= 0) [[unlikely]]
+                throw std::runtime_error("recv failed");
 
             received += static_cast<size_t>(n);
         }
@@ -172,7 +169,7 @@ namespace Tilapia::Platform
 
         if (WSAPoll(fds, (ULONG)sockets.size(), (INT)timeout.count()) > 0)
             for (size_t i = 0; i < sockets.size(); ++i)
-                if ((fds[i].revents & POLLRDNORM) > 0)                    callback(sockets[i]);
+                if ((fds[i].revents & POLLRDNORM) > 0) callback(sockets[i]);
 #else
         auto* fds = (pollfd*)alloca(sockets.size() * sizeof(pollfd));
 

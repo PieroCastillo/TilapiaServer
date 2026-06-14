@@ -20,17 +20,17 @@ int main(int argc, char** argv)
 
     while (true)
     {
-        // std::string input;
-        // std::getline(std::cin, input);
+        // uint32_t msgIn, msgOut = 20;
+        // Tilapia::Platform::Send(clientSocket, &msgOut, 1);
+        // Tilapia::Platform::Recv(clientSocket, &msgIn, 1, false);
+        // std::println("value: {}", msgIn);
 
-        uint32_t msgIn, msgOut = 20;
-        Tilapia::Platform::Send(clientSocket, &msgOut, 1);
-        Tilapia::Platform::Recv(clientSocket, &msgIn, 1, false);
-        std::println("value: {}", msgIn);
+        std::string input;
+        std::getline(std::cin, input);
+        auto payloadSize = input.size();
 
-        // auto payloadSize = input.size();
-        // Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(&payloadSize), sizeof(payloadSize)));
-        // Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(input.data()), payloadSize));
+        Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(&payloadSize), sizeof(payloadSize)));
+        Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(input.data()), payloadSize));
     }
 
     Tilapia::Platform::Close(clientSocket);
