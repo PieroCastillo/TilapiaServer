@@ -112,18 +112,20 @@ namespace Tilapia::Platform
         return sock_fd;
     }
 
-    void Recv(Socket socket, std::span<uint8_t> data, bool waitAll)
+    auto Recv(Socket socket, std::span<uint8_t> data, bool waitAll) -> uint32_t
     {
-        if (!waitAll)
-        {
-#ifdef _WIN32
-            auto receivedSize = recv(socket, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), MSG_WAITALL);
-#else
-            auto receivedSize = recv(socket, data.data(), data.size(), MSG_WAITALL);
-#endif
-            if (receivedSize <= 0) [[unlikely]]
-                throw std::runtime_error("recv failed");
-        }
+        //         if (waitAll)
+        //         {
+        // #ifdef _WIN32
+        //             auto receivedSize = recv(socket, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), MSG_WAITALL);
+        // #else
+        //             auto receivedSize = recv(socket, data.data(), data.size(), MSG_WAITALL);
+        // #endif
+        //             if (receivedSize <= 0) [[unlikely]]
+        //                 throw std::runtime_error("recv failed");
+
+        //             return receivedSize;
+        //         }
         uint32_t received = 0;
 
         while (received < data.size())
@@ -138,12 +140,26 @@ namespace Tilapia::Platform
 
             received += static_cast<size_t>(n);
         }
+        return received;
     }
 
     void Send(Socket socket, std::span<const uint8_t> data)
     {
 #ifdef _WIN32
-        auto r = send(socket, reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size()), 0);
+        // auto r = send(socket, reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size()), 0);
+        auto ptr = reinterpret_cast<const char*>(data.data());
+        auto size = static_cast<int>(data.size());
+
+        while (size > 0)
+        {
+            auto n = send(socket, ptr, size, 0);
+
+            if (n <= 0) [[unlikely]]
+                throw std::runtime_error("send failed");
+
+            ptr += n;
+            size -= n;
+        }
 #else
         send(socket, data.data(), data.size(), 0);
 #endif

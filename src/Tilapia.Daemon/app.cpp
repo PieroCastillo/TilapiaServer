@@ -53,13 +53,10 @@ int main(int argc, char** argv)
             std::chrono::milliseconds(2),
             [&](Tilapia::Platform::Socket sck) {
                 uint32_t payloadSize;
-                Tilapia::Platform::Recv(sck, &payloadSize, 1, true);
+                Tilapia::Platform::Recv(sck, &payloadSize, 1);
                 auto payload = (char*)alloca(payloadSize);
-                std::println("payloadSize = {}", payloadSize);
-                Tilapia::Platform::Recv(sck, payload, payloadSize);
-                std::println("{}", std::string_view(payload, payloadSize));
-                // Tilapia::Platform::Send(sck, &msgOut, 1);
-                // std::println("value: {}", msgIn);
+                Tilapia::Platform::Recv(sck, std::span((uint8_t*)payload, payloadSize));
+                std::println("{}", std::string(payload, payloadSize));
             }
         );
 

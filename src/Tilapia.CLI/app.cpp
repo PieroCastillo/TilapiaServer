@@ -29,7 +29,7 @@ int main(int argc, char** argv)
         std::getline(std::cin, input);
         auto payloadSize = input.size();
 
-        Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(&payloadSize), sizeof(payloadSize)));
+        Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(&payloadSize), sizeof(uint32_t)));
         Tilapia::Platform::Send(clientSocket, std::span(reinterpret_cast<uint8_t*>(input.data()), payloadSize));
     }
 

@@ -27,7 +27,7 @@ export namespace Tilapia::Platform
 
     auto Connect(const std::string& path) -> Socket;
 
-    void Recv(Socket socket, std::span<uint8_t> data, bool waitAll = true);
+    auto Recv(Socket socket, std::span<uint8_t> data, bool waitAll = true) -> uint32_t;
     void Send(Socket socket, std::span<const uint8_t> data);
     template<typename T>
     void Recv(Socket socket, T* ptr, uint32_t count, bool waitAll = true)
