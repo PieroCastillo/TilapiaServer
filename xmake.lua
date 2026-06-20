@@ -4,9 +4,9 @@ add_rules("mode.debug", "mode.release")
 add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 
 local libs = {
-    "Tilapia.IRLib",
-    "Tilapia.Platform",
-    "Tilapia.Protocol",
+    { name = "Tilapia.IRLib", deps = {} },
+    { name = "Tilapia.Platform", deps = {} },
+    { name = "Tilapia.Protocol", deps = { "Tilapia.Platform" } },
 }
 
 local apps = {
@@ -20,16 +20,20 @@ local tests = {
     { name = "makeBin", deps = { "Tilapia.IRLib" } },
 }
 
-for _, libname in ipairs(libs) do
-    target(libname)
+for _, lib in ipairs(libs) do
+    target(lib.name)
         set_kind("static")
-        add_files("src/" .. libname .. "/**.cppm", {public = true})
-        local srcFiles = os.files("src/" .. libname .. "/**.cpp")
+        add_files("src/" .. lib.name .. "/**.cppm", {public = true})
+        local srcFiles = os.files("src/" .. lib.name .. "/**.cpp")
         if #srcFiles > 0 then
             add_files(srcFiles)
         end
         set_policy("build.c++.modules", true)
         set_policy("build.optimization.lto", true)
+
+        if #lib.deps > 0 then
+            add_deps(table.unpack(lib.deps))
+        end
 
         if is_plat("windows") then
             add_links("ws2_32")

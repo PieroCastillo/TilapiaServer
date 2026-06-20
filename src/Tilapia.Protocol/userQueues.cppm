@@ -14,7 +14,7 @@ module;
 
 export module tilapia.protocol:userqueues;
 
-export namespace Tilapia::Protocol::UserQueues
+export namespace Tilapia::Protocol
 {
     /*
     cli -> daemon
@@ -42,6 +42,7 @@ export namespace Tilapia::Protocol::UserQueues
     request input text
     send output text
     */
+
     struct RingHeader
     {
         std::atomic<uint32_t> head;
