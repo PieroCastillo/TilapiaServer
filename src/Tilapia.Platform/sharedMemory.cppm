@@ -17,11 +17,12 @@ export namespace Tilapia::Platform
         uint8_t* data{};
         uint32_t size{};
         uint64_t handle{};
-        SharedMemory() = default;
-        SharedMemory(uint8_t* p, uint32_t s, uint64_t h) : data(p), size(s), handle(h) {}
+        const bool isOwner;
+        SharedMemory() : isOwner(false) {};
+        explicit SharedMemory(uint8_t* p, uint32_t s, uint64_t h, bool io) : data(p), size(s), handle(h), isOwner(io) {}
         ~SharedMemory();
     };
 
     auto sharedAlloc(uint32_t size) -> SharedMemory;
-    auto sharedOpen(uint64_t inheritedHandle) -> SharedMemory;
+    auto sharedOpen(uint64_t inheritedHandle, uint32_t size) -> SharedMemory;
 }

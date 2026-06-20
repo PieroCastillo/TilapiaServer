@@ -43,14 +43,6 @@ export namespace Tilapia::Protocol
     send output text
     */
 
-    struct RingHeader
-    {
-        std::atomic<uint32_t> head;
-        std::atomic<uint32_t> tail;
-        uint32_t capacity;
-        uint32_t stride;
-    };
-
     struct CompletionPacket
     {
         uint32_t opcode;

@@ -23,13 +23,13 @@ namespace Tilapia::Platform
     {
         if (data)
             UnmapViewOfFile(data);
-
-        if (handle)
-            CloseHandle((HANDLE)handle);
-
-        data = nullptr;
+        
+            data = nullptr;
         handle = 0;
         size = 0;
+
+        if (handle && !isOwner)
+            CloseHandle((HANDLE)handle);
     }
 
     auto sharedAlloc(uint32_t size) -> SharedMemory
@@ -47,17 +47,17 @@ namespace Tilapia::Platform
             return {};
         }
 
-        return { p, size, (uint64_t)h };
+        return SharedMemory(p, size, (uint64_t)h, true);
     }
 
-    auto sharedOpen(uint64_t inherited) -> SharedMemory
+    auto sharedOpen(uint64_t inherited, uint32_t size) -> SharedMemory
     {
         auto p = (uint8_t*)MapViewOfFile((HANDLE)inherited, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 
         if (!p)
             return {};
 
-        return { p, 0, inherited };
+        return SharedMemory(p, size, inherited, false);
     }
 }
 #endif
