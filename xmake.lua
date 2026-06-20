@@ -5,13 +5,14 @@ add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 
 local libs = {
     "Tilapia.IRLib",
-    "Tilapia.Platform"
+    "Tilapia.Platform",
+    "Tilapia.Protocol",
 }
 
 local apps = {
-    { name = "Tilapia.CLI", deps = { "Tilapia.Platform" } },
-    { name = "Tilapia.Daemon", deps = { "Tilapia.Platform" } },
-    { name = "Tilapia.Runtime", deps = { "Tilapia.IRLib", "Tilapia.Platform" } },
+    { name = "Tilapia.CLI", deps = { "Tilapia.Platform", "Tilapia.Protocol" } },
+    { name = "Tilapia.Daemon", deps = { "Tilapia.Platform", "Tilapia.Protocol" } },
+    { name = "Tilapia.Runtime", deps = { "Tilapia.IRLib", "Tilapia.Platform", "Tilapia.Protocol" } },
     { name = "Tilapia.IRVis", deps = { "Tilapia.IRLib" } },
 }
 

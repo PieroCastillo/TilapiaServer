@@ -3,6 +3,7 @@ Created by @PieroCastillo on 2026-06-10
 */
 module;
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -11,9 +12,9 @@ module;
 #include <span>
 #include <tuple>
 
-export module tilapia.platform:ipccontrol;
+export module tilapia.protocol:userqueues;
 
-export namespace Tilapia::Platform::IPCControl
+export namespace Tilapia::Protocol::UserQueues
 {
     /*
     cli -> daemon
@@ -41,17 +42,28 @@ export namespace Tilapia::Platform::IPCControl
     request input text
     send output text
     */
-    enum class Action
+    struct RingHeader
     {
-        OpenFile,
-        OpenPort,
-        ReadKeyboard,
-        Print,
+        std::atomic<uint32_t> head;
+        std::atomic<uint32_t> tail;
+        uint32_t capacity;
+        uint32_t stride;
     };
 
-    struct ControlMessage
+    struct CompletionPacket
     {
-        Action action;
-        
+        uint32_t opcode;
+        uint32_t flags;
+        uint32_t payloadOffset;
+        uint32_t payloadSize;
+        uint64_t requestId;
+    };
+
+    struct ReceivePacket
+    {
+        uint64_t requestId;
+        int32_t status;
+        uint32_t resultOffset;
+        uint32_t resultSize;
     };
 }
