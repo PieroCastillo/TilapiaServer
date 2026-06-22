@@ -46,13 +46,29 @@ export namespace Tilapia::Protocol
         RingHeader* ringHeader; // = (RingHeader*)shMemPtr;
         T* ringBuff; // = (uint8_t*)shMemPtr + sizeof(T);
         uint32_t capacity; // = ringHeader->capacity;
-    public:
-        explicit FastSharedRing()
+
+        void setup()
         {
-            // TODO: alloc/open shared memory
+            shMemPtr = shMem.data;
             ringHeader = (RingHeader*)shMemPtr;
             ringBuff = (uint8_t*)shMemPtr + sizeof(T);
             capacity = ringHeader->capacity;
+            if (!shMem.isOwner)
+                return;
+            ringHeader->readIdx = 0;
+            ringHeader->writeIdx = 0;
+        }
+    public:
+        explicit FastSharedRing(uint32_t count)
+        {
+            shMemPtr = Tilapia::Platform::sharedAlloc(sizeof(RingHeader) + (count * sizeof(T)));
+            setup();
+        };
+
+        explicit FastSharedRing(uint64_t handle, uint32_t count)
+        {
+            shMemPtr = Tilapia::Platform::sharedOpen(handle, sizeof(RingHeader) + (count * sizeof(T)));
+            setup();
         };
 
         void Push(const T& item)

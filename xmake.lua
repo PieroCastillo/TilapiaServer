@@ -10,10 +10,10 @@ local libs = {
 }
 
 local apps = {
-    { name = "Tilapia.CLI", deps = { "Tilapia.Platform", "Tilapia.Protocol" } },
-    { name = "Tilapia.Daemon", deps = { "Tilapia.Platform", "Tilapia.Protocol" } },
-    { name = "Tilapia.Runtime", deps = { "Tilapia.IRLib", "Tilapia.Platform", "Tilapia.Protocol" } },
-    { name = "Tilapia.IRVis", deps = { "Tilapia.IRLib" } },
+    { name = "Tilapia.CLI", binname = "tilapia", deps = { "Tilapia.Platform", "Tilapia.Protocol" } },
+    { name = "Tilapia.Daemon", binname = "tilapiad", deps = { "Tilapia.Platform", "Tilapia.Protocol" } },
+    { name = "Tilapia.Runtime", binname = "tiruntime", deps = { "Tilapia.IRLib", "Tilapia.Platform", "Tilapia.Protocol" } },
+    { name = "Tilapia.IRVis", binname = "tirvis", deps = { "Tilapia.IRLib" } },
 }
 
 local tests = {
@@ -49,6 +49,7 @@ for _, app in ipairs(apps) do
         add_files("src/" .. app.name .. "/**.cpp")
         set_policy("build.c++.modules", true)
         set_policy("build.optimization.lto", true)
+        set_basename(app.binname)
 
         if #app.deps > 0 then
             add_deps(table.unpack(app.deps))
