@@ -8,11 +8,12 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+#include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <mswsock.h>
-#include <windows.h>
 #include <tchar.h>
+#include <tlhelp32.h>
 #endif
 
 import std;
@@ -90,7 +91,7 @@ namespace Tilapia::Platform
         return true;
     }
 
-    auto RunProcess(const std::filesystem::path& appPath, std::span<const std::string> args) -> Process
+    auto RunProcess(const std::filesystem::path& appPath, std::span<const std::string> args, bool detached) -> Process
     {
         auto cmd = makeCmd(args);
 
@@ -98,12 +99,19 @@ namespace Tilapia::Platform
         si.cb = sizeof(si);
         PROCESS_INFORMATION pi{};
 
-        if (!CreateProcessA(appPath.string().c_str(), cmd.data(), 0, 0, true, 0, 0, 0, &si, &pi))
+        /*
+        if is detached, child process does not inherit handles
+        */
+        if (!CreateProcessA(appPath.string().c_str(), cmd.data(), 0, 0,
+            !detached, detached ? (DETACHED_PROCESS | CREATE_BREAKAWAY_FROM_JOB) : 0,
+            0, 0, &si, &pi))
         {
 
         }
         CloseHandle(pi.hThread);
-        Process p = { (uint32_t)pi.dwProcessId, (uint64_t)pi.hProcess };
+        if (detached)
+            CloseHandle(pi.hProcess);
+        Process p = { (uint32_t)pi.dwProcessId, detached ? 0 : (uint64_t)pi.hProcess };
         return p;
     }
 
@@ -116,6 +124,37 @@ namespace Tilapia::Platform
     {
         TerminateProcess((HANDLE)process.handle, 0);
         CloseHandle((HANDLE)process.handle);
+    }
+
+    void KillProcessByName(const std::string& appname)
+    {
+        auto exeName = appname + ".exe";
+
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (snapshot == INVALID_HANDLE_VALUE)
+            return;
+
+        PROCESSENTRY32 pe;
+        pe.dwSize = sizeof(pe);
+
+        if (Process32First(snapshot, &pe))
+        {
+            do
+            {
+                if (_stricmp(pe.szExeFile, exeName.c_str()) == 0)
+                {
+                    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pe.th32ProcessID);
+
+                    if (hProcess)
+                    {
+                        TerminateProcess(hProcess, 0);
+                        CloseHandle(hProcess);
+                    }
+                }
+            } while (Process32Next(snapshot, &pe));
+        }
+
+        CloseHandle(snapshot);
     }
 }
 #endif

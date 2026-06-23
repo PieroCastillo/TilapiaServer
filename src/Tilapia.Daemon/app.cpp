@@ -51,10 +51,13 @@ int main(int argc, char** argv)
         Tilapia::Platform::PollIn(
             cliSockets,
             std::chrono::milliseconds(2),
-            [&](Tilapia::Platform::Socket sck) {
+            [&](Tilapia::Platform::Socket sck)
+            {
                 uint32_t payloadSize;
                 Tilapia::Platform::Recv(sck, &payloadSize, 1);
+                
                 auto payload = (char*)alloca(payloadSize);
+
                 Tilapia::Platform::Recv(sck, std::span((uint8_t*)payload, payloadSize));
                 std::println("{}", std::string(payload, payloadSize));
             }
