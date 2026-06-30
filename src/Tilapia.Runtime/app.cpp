@@ -1,5 +1,8 @@
-#include "common.hpp"
+// standard headers
 #include <cstdint>
+
+// project headers
+#include "common.hpp"
 
 import std;
 import tilapia.irlib;

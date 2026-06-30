@@ -1,8 +1,11 @@
 module;
 
+// standard headers
 #include <bit>
 #include <cstdint>
 #include <limits>
+
+// project headers
 #include "common.hpp"
 
 export module tilapia.ops:alu.i;

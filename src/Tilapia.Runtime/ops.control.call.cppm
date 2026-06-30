@@ -1,8 +1,12 @@
 module;
 
+// project headers
+#include "common.hpp"
 #include <iostream>
 #include <print>
 #include <string_view>
+
+// project headers
 #include "common.hpp"
 
 export module tilapia.ops:control.call;

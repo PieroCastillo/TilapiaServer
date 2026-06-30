@@ -1,9 +1,12 @@
 module;
 
+// standard headers
 #include <bit>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+
+// project headers
 #include "common.hpp"
 
 export module tilapia.ops:control.loadStore;

@@ -1,7 +1,10 @@
 module;
 
+// standard headers
 #include <bit>
 #include <cstdint>
+
+// project headers
 #include "common.hpp"
 
 export module tilapia.ops:control;

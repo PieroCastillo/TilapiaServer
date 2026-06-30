@@ -3,6 +3,34 @@ set_languages("c++23")
 add_rules("mode.debug", "mode.release")
 add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 
+option("san")
+    set_default("none")
+    set_values("none", "asan", "tsan", "ubsan")
+    set_showmenu(true)
+option_end()
+
+if is_mode("debug") then
+    -- Debug STL / CRT checks
+    if is_plat("windows") and not is_config("toolchain", "mingw", "clang", "llvm") then
+        add_defines("_ITERATOR_DEBUG_LEVEL=2", "_CRTDBG_MAP_ALLOC")
+    elseif is_config("toolchain", "gcc", "mingw", "clang", "llvm") then
+        add_defines("_GLIBCXX_DEBUG", "_GLIBCXX_DEBUG_PEDANTIC")
+    end
+
+    local san = get_config("san")
+
+    if san == "asan" then
+        set_policy("build.sanitizer.address", true)
+    elseif san == "tsan" then
+        set_policy("build.sanitizer.thread", true)
+    elseif san == "ubsan" then
+        set_policy("build.sanitizer.undefined", true)
+    end
+elseif is_mode("release") then
+    add_requires("mimalloc", { configs = { shared = true, debug = false }})
+    add_defines("TILAPIA_USE_MIMALLOC")
+end
+
 local libs = {
     { name = "Tilapia.IRLib", deps = {} },
     { name = "Tilapia.Platform", deps = {} },
@@ -35,6 +63,10 @@ for _, lib in ipairs(libs) do
             add_deps(table.unpack(lib.deps))
         end
 
+        if is_mode("release") then
+            add_packages("mimalloc")
+        end
+
         if is_plat("windows") then
             add_links("ws2_32")
         end
@@ -47,12 +79,17 @@ for _, app in ipairs(apps) do
         add_headerfiles("include/" .. app.name .. "/**.hpp")
         add_files("src/" .. app.name .. "/**.cppm")
         add_files("src/" .. app.name .. "/**.cpp")
+        add_packages("mimalloc")
         set_policy("build.c++.modules", true)
         set_policy("build.optimization.lto", true)
         set_basename(app.binname)
 
         if #app.deps > 0 then
             add_deps(table.unpack(app.deps))
+        end
+
+        if is_mode("release") then
+            add_packages("mimalloc")
         end
 
         if is_plat("windows") then

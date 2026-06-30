@@ -49,4 +49,9 @@ Created by @PieroCastillo on 2026-04-16
     #include <vector>
 #endif
 
+#ifdef TILAPIA_USE_MIMALLOC
+    #include <mimalloc.h>
+    #include <mimalloc-override.h>
+#endif
+
 #endif // TILAPIA_RUNTIME_COMMON_HPP
